@@ -1,0 +1,109 @@
+@{
+    var mensaje = TempData["Mensaje"] as string;
+    var tipoMensaje = TempData["Tipo"] as string ?? "info";
+
+    var controladorActual = ViewContext.RouteData.Values["controller"]?.ToString();
+    string Activo(string controlador) =>
+        string.Equals(controladorActual, controlador, StringComparison.OrdinalIgnoreCase) ? "activo" : "";
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Control de Víveres</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="app-shell">
+
+        <!-- ===== MENÚ LATERAL ===== -->
+        <aside class="sidebar" id="menuLateral">
+            <div class="sidebar-logo">
+                <i class="bi bi-box-seam"></i>
+                <span>Víveres<b>App</b></span>
+            </div>
+
+            @if (User.Identity?.IsAuthenticated == true)
+            {
+                <nav class="sidebar-nav">
+                    <p class="sidebar-section">Menú</p>
+
+                    <a asp-controller="Alimentos" asp-action="Index" class="sidebar-link @Activo("Alimentos")">
+                        <i class="bi bi-grid-fill"></i> <span>Inventario</span>
+                    </a>
+
+                    <a asp-controller="Pedidos" asp-action="Index" class="sidebar-link @Activo("Pedidos")">
+                        <i class="bi bi-cart-plus-fill"></i> <span>Pedidos por realizar</span>
+                    </a>
+
+                    <a asp-controller="Entregas" asp-action="Index" class="sidebar-link @Activo("Entregas")">
+                        <i class="bi bi-geo-alt-fill"></i> <span>Lugares visitados</span>
+                    </a>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <div class="sidebar-usuario">
+                        <div class="avatar">@(User.Identity.Name?.Substring(0, 1).ToUpper())</div>
+                        <div class="sidebar-usuario-datos">
+                            <strong>@User.Identity.Name</strong>
+                            <span>@(User.IsInRole("Admin") ? "Administrador" : "Lector")</span>
+                        </div>
+                    </div>
+
+                    <form asp-controller="Cuentas" asp-action="CerrarSesion" method="post">
+                        <button type="submit" class="btn-salir">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+                        </button>
+                    </form>
+                </div>
+            }
+        </aside>
+
+        <div class="sidebar-fondo" id="fondoMenu"></div>
+
+        <!-- ===== ZONA PRINCIPAL ===== -->
+        <div class="app-main">
+            <header class="topbar">
+                <button type="button" class="btn-menu" id="botonMenu" aria-label="Abrir menú">
+                    <i class="bi bi-list"></i>
+                </button>
+                <span class="topbar-titulo">@ViewData["Title"]</span>
+            </header>
+
+            <main class="main-content">
+                @RenderBody()
+            </main>
+
+            <footer class="footer">
+                <p>&copy; @DateTime.Now.Year Control de Víveres - Sistema de Inventario</p>
+            </footer>
+        </div>
+    </div>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @if (mensaje is not null)
+    {
+        @* Json.Serialize escapa comillas y acentos: un mensaje con apóstrofo no rompe el script. *@
+        <script>
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: @Json.Serialize(tipoMensaje),
+                title: @Json.Serialize(mensaje),
+                background: '#1e293b',
+                color: '#f8fafc',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true
+            });
+        </script>
+    }
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

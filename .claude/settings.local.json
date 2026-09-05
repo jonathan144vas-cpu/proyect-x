@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(dotnet build *)",
+      "PowerShell(dotnet ef *)",
+      "PowerShell($c = New-Object System.Net.Sockets.TcpClient; try { $c.Connect\\(\"localhost\", 5432\\); \"Postgres ESCUCHANDO en 5432\" } catch { \"Postgres NO responde en 5432\" } finally { $c.Close\\(\\) })",
+      "WebFetch(domain:smmc.me)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5278/Cuentas/IniciarSesion)"
+    ]
+  }
+}

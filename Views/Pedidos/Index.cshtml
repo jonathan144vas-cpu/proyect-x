@@ -1,0 +1,193 @@
+@model IEnumerable<Pedido>
+
+@{
+    ViewData["Title"] = "Pedidos por Realizar";
+
+    var esAdmin = User.IsInRole("Admin");
+    var buscarActual = ViewBag.Buscar as string;
+    var estadoActual = ViewBag.Estado as EstadoPedido?;
+
+    var pendientes = Model.Count(p => p.Estado == EstadoPedido.Pendiente);
+    var solicitados = Model.Count(p => p.Estado == EstadoPedido.Solicitado);
+    var recibidos = Model.Count(p => p.Estado == EstadoPedido.Recibido);
+
+    // Columnas: Artículo, Categoría, Cantidad, Prioridad, Se necesita, Estado (+ Acciones)
+    var totalColumnas = esAdmin ? 7 : 6;
+
+    string ClaseEstado(EstadoPedido estado) => estado switch
+    {
+        EstadoPedido.Pendiente => "etiqueta etiqueta-ambar",
+        EstadoPedido.Solicitado => "etiqueta etiqueta-azul",
+        EstadoPedido.Recibido => "etiqueta etiqueta-verde",
+        _ => "etiqueta etiqueta-gris"
+    };
+
+    string ClasePrioridad(PrioridadPedido prioridad) => prioridad switch
+    {
+        PrioridadPedido.Alta => "etiqueta etiqueta-roja",
+        PrioridadPedido.Normal => "etiqueta etiqueta-azul",
+        _ => "etiqueta etiqueta-gris"
+    };
+}
+
+<div class="container-fluid">
+    <div class="header-panel">
+        <div>
+            <h2><i class="bi bi-cart-plus"></i> Pedidos por Realizar</h2>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
+                Lista de víveres que hacen falta comprar
+            </p>
+        </div>
+
+        @if (esAdmin)
+        {
+            <a asp-action="Crear" class="btn-nuevo">+ Nuevo Pedido</a>
+        }
+    </div>
+
+    <div class="tarjetas-resumen">
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Pendientes</div>
+            <div class="tarjeta-valor" style="color: #fbbf24;">@pendientes</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Solicitados</div>
+            <div class="tarjeta-valor" style="color: #93c5fd;">@solicitados</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Recibidos</div>
+            <div class="tarjeta-valor" style="color: #4ade80;">@recibidos</div>
+        </div>
+    </div>
+
+    <form method="get" class="filtros">
+        <input type="text" name="buscar" placeholder="Buscar artículo..." value="@buscarActual" />
+        @* Se arma con SelectList para que el filtro elegido siga marcado al recargar. *@
+        <select name="estado" asp-items="@(new SelectList(Html.GetEnumSelectList<EstadoPedido>(), "Value", "Text", ((int?)estadoActual)?.ToString()))">
+            <option value="">Todos los estados</option>
+        </select>
+        <button type="submit">Filtrar</button>
+    </form>
+
+    <div class="tabla-responsive">
+        <table class="tabla-viveres">
+            <thead>
+                <tr>
+                    <th>Artículo</th>
+                    <th>Categoría</th>
+                    <th>Cantidad</th>
+                    <th>Prioridad</th>
+                    <th>Se necesita</th>
+                    <th>Estado</th>
+                    @if (esAdmin)
+                    {
+                        <th>Acciones</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="@totalColumnas" style="text-align: center; color: #94a3b8; padding: 2rem;">
+                            No hay pedidos que coincidan con la búsqueda.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td data-label="Artículo">
+                                <strong>@item.Articulo</strong>
+                                @if (!string.IsNullOrWhiteSpace(item.Proveedor))
+                                {
+                                    <div style="color: #64748b; font-size: 0.8rem;">@item.Proveedor</div>
+                                }
+                            </td>
+                            <td data-label="Categoría">@item.Categoria</td>
+                            <td data-label="Cantidad">@item.Cantidad @item.UnidadMedida</td>
+                            <td data-label="Prioridad">
+                                <span class="@ClasePrioridad(item.Prioridad)">@item.Prioridad</span>
+                            </td>
+                            <td data-label="Se necesita">
+                                @(item.FechaNecesaria?.ToString("dd/MM/yyyy") ?? "Sin fecha")
+                            </td>
+                            <td data-label="Estado">
+                                <span class="@ClaseEstado(item.Estado)">@item.Estado</span>
+                            </td>
+                            @if (esAdmin)
+                            {
+                                <td data-label="Acciones" class="acciones">
+                                    @if (item.Estado != EstadoPedido.Recibido && item.Estado != EstadoPedido.Cancelado)
+                                    {
+                                        <form asp-action="Recibir" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                            <button type="button" class="btn-recibir js-recibir"
+                                                    data-articulo="@item.Articulo"
+                                                    data-cantidad="@item.Cantidad @item.UnidadMedida">
+                                                Recibir
+                                            </button>
+                                        </form>
+                                    }
+
+                                    <a asp-action="Editar" asp-route-id="@item.Id" class="btn-editar">Editar</a>
+
+                                    <form asp-action="Eliminar" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                        <button type="button" class="btn-eliminar js-eliminar" data-nombre="@item.Articulo">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmar(boton, opciones) {
+            var formulario = boton.closest('form');
+
+            Swal.fire(Object.assign({
+                background: '#1e293b',
+                color: '#f8fafc',
+                showCancelButton: true,
+                cancelButtonColor: '#475569',
+                cancelButtonText: 'Cancelar'
+            }, opciones)).then(function (resultado) {
+                if (resultado.isConfirmed) {
+                    formulario.submit();
+                }
+            });
+        }
+
+        document.querySelectorAll('.js-eliminar').forEach(function (boton) {
+            boton.addEventListener('click', function () {
+                confirmar(boton, {
+                    title: '¿Eliminar pedido?',
+                    text: 'Estás a punto de eliminar el pedido de "' + boton.dataset.nombre + '".',
+                    icon: 'warning',
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'Sí, eliminar'
+                });
+            });
+        });
+
+        document.querySelectorAll('.js-recibir').forEach(function (boton) {
+            boton.addEventListener('click', function () {
+                confirmar(boton, {
+                    title: '¿Marcar como recibido?',
+                    text: 'Se sumarán ' + boton.dataset.cantidad + ' de "' + boton.dataset.articulo + '" al inventario.',
+                    icon: 'question',
+                    confirmButtonColor: '#10b981',
+                    confirmButtonText: 'Sí, recibir'
+                });
+            });
+        });
+    </script>
+}

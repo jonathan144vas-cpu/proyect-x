@@ -1,0 +1,61 @@
+@model Pedido
+
+@* Campos compartidos por las pantallas de Crear y Editar, para no repetirlos en las dos. *@
+
+<div class="form-group">
+    <label asp-for="Articulo"></label>
+    <input asp-for="Articulo" class="form-control" placeholder="Ej: Arroz" />
+    <span asp-validation-for="Articulo" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Categoria"></label>
+    <select asp-for="Categoria" class="form-control" asp-items="@(new SelectList(Catalogos.Categorias))">
+        <option value="">Seleccione categoría</option>
+    </select>
+    <span asp-validation-for="Categoria" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Cantidad"></label>
+    <input asp-for="Cantidad" type="number" min="1" max="100000" class="form-control" />
+    <span asp-validation-for="Cantidad" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="UnidadMedida"></label>
+    <select asp-for="UnidadMedida" class="form-control" asp-items="@(new SelectList(Catalogos.UnidadesMedida))">
+        <option value="">Seleccione unidad</option>
+    </select>
+    <span asp-validation-for="UnidadMedida" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Proveedor"></label>
+    <input asp-for="Proveedor" class="form-control" placeholder="Opcional. Ej: Distribuidora El Sol" />
+    <span asp-validation-for="Proveedor" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="FechaNecesaria"></label>
+    <input asp-for="FechaNecesaria" type="date" class="form-control" />
+    <span asp-validation-for="FechaNecesaria" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Prioridad"></label>
+    <select asp-for="Prioridad" class="form-control" asp-items="@Html.GetEnumSelectList<PrioridadPedido>()"></select>
+    <span asp-validation-for="Prioridad" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Estado"></label>
+    <select asp-for="Estado" class="form-control" asp-items="@Html.GetEnumSelectList<EstadoPedido>()"></select>
+    <span asp-validation-for="Estado" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Observaciones"></label>
+    <textarea asp-for="Observaciones" class="form-control" placeholder="Opcional"></textarea>
+    <span asp-validation-for="Observaciones" class="text-danger"></span>
+</div>

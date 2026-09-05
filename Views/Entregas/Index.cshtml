@@ -1,0 +1,165 @@
+@model IEnumerable<Entrega>
+
+@{
+    ViewData["Title"] = "Lugares Visitados";
+
+    var esAdmin = User.IsInRole("Admin");
+    var buscarActual = ViewBag.Buscar as string;
+    var departamentoActual = ViewBag.Departamento as string;
+
+    // Estos totales vienen del controlador y se calculan sobre TODO el registro,
+    // no sobre lo filtrado, igual que en el inventario.
+    var totalLugares = (int)(ViewBag.TotalLugares ?? 0);
+    var totalFamilias = (int)(ViewBag.TotalFamilias ?? 0);
+    var totalEntregado = (int)(ViewBag.TotalEntregado ?? 0);
+    var totalDepartamentos = (int)(ViewBag.TotalDepartamentos ?? 0);
+
+    // Columnas: Lugar, Departamento, Fecha, Familias, Entregado, Ubicación (+ Acciones)
+    var totalColumnas = esAdmin ? 7 : 6;
+}
+
+<div class="container-fluid">
+    <div class="header-panel">
+        <div>
+            <h2><i class="bi bi-geo-alt-fill"></i> Lugares Visitados</h2>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
+                Comunidades de Guatemala donde ya se entregaron víveres
+            </p>
+        </div>
+
+        @if (esAdmin)
+        {
+            <a asp-action="Crear" class="btn-nuevo">+ Nueva Entrega</a>
+        }
+    </div>
+
+    <div class="tarjetas-resumen">
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Lugares</div>
+            <div class="tarjeta-valor">@totalLugares</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Departamentos</div>
+            <div class="tarjeta-valor" style="color: #93c5fd;">@totalDepartamentos</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Familias beneficiadas</div>
+            <div class="tarjeta-valor" style="color: #4ade80;">@totalFamilias</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Víveres entregados</div>
+            <div class="tarjeta-valor" style="color: #fbbf24;">@totalEntregado</div>
+        </div>
+    </div>
+
+    <form method="get" class="filtros">
+        <input type="text" name="buscar" placeholder="Buscar lugar o municipio..." value="@buscarActual" />
+        <select name="departamento" asp-items="@(new SelectList(Catalogos.NombresDepartamentos, departamentoActual))">
+            <option value="">Todos los departamentos</option>
+        </select>
+        <button type="submit">Filtrar</button>
+    </form>
+
+    <div class="tabla-responsive">
+        <table class="tabla-viveres">
+            <thead>
+                <tr>
+                    <th>Lugar</th>
+                    <th>Departamento</th>
+                    <th>Fecha</th>
+                    <th>Familias</th>
+                    <th>Entregado</th>
+                    <th>Ubicación</th>
+                    @if (esAdmin)
+                    {
+                        <th>Acciones</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="@totalColumnas" style="text-align: center; color: #94a3b8; padding: 2rem;">
+                            No hay entregas que coincidan con la búsqueda.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td data-label="Lugar">
+                                <strong>@item.Lugar</strong>
+                                @if (!string.IsNullOrWhiteSpace(item.Municipio))
+                                {
+                                    <div style="color: #64748b; font-size: 0.8rem;">@item.Municipio</div>
+                                }
+                            </td>
+                            <td data-label="Departamento">@item.Departamento</td>
+                            <td data-label="Fecha">@item.FechaEntrega.ToString("dd/MM/yyyy")</td>
+                            <td data-label="Familias">@item.FamiliasBeneficiadas</td>
+                            <td data-label="Entregado">@item.TotalEntregado</td>
+                            <td data-label="Ubicación">
+                                @if (item.Latitud is double lat && item.Longitud is double lon)
+                                {
+                                    @* Enlace al mapa mientras no exista la vista de mapa propia. *@
+                                    <a href="https://www.openstreetmap.org/?mlat=@lat.ToString(System.Globalization.CultureInfo.InvariantCulture)&mlon=@lon.ToString(System.Globalization.CultureInfo.InvariantCulture)#map=11/@lat.ToString(System.Globalization.CultureInfo.InvariantCulture)/@lon.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                                       target="_blank" rel="noopener" class="etiqueta etiqueta-azul">
+                                        <i class="bi bi-map"></i> Ver mapa
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="etiqueta etiqueta-gris">Sin coordenadas</span>
+                                }
+                            </td>
+                            @if (esAdmin)
+                            {
+                                <td data-label="Acciones" class="acciones">
+                                    <a asp-action="Editar" asp-route-id="@item.Id" class="btn-editar">Editar</a>
+
+                                    <form asp-action="Eliminar" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                        <button type="button" class="btn-eliminar js-eliminar" data-nombre="@item.Lugar">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Se usan atributos data-* y no onclick="...('@@item.Lugar')" porque un nombre
+        // con apóstrofo (por ejemplo "Aldea d'Oro") rompería el JavaScript generado.
+        document.querySelectorAll('.js-eliminar').forEach(function (boton) {
+            boton.addEventListener('click', function () {
+                var formulario = boton.closest('form');
+
+                Swal.fire({
+                    title: '¿Eliminar entrega?',
+                    text: 'Estás a punto de eliminar el registro de "' + boton.dataset.nombre + '". Esta acción no se puede deshacer.',
+                    icon: 'warning',
+                    background: '#1e293b',
+                    color: '#f8fafc',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#475569',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then(function (resultado) {
+                    if (resultado.isConfirmed) {
+                        formulario.submit();
+                    }
+                });
+            });
+        });
+    </script>
+}

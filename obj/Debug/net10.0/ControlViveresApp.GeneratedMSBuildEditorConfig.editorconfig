@@ -1,0 +1,112 @@
+is_global = true
+build_property.TargetFramework = net10.0
+build_property.TargetFramework = net10.0
+build_property.TargetPlatformMinVersion = 
+build_property.TargetPlatformMinVersion = 
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.UsingMicrosoftNETSdkWeb = true
+build_property.ProjectTypeGuids = 
+build_property.ProjectTypeGuids = 
+build_property.InvariantGlobalization = 
+build_property.InvariantGlobalization = 
+build_property.PlatformNeutralAssembly = 
+build_property.PlatformNeutralAssembly = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property.EnforceExtendedAnalyzerRules = 
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property._SupportedPlatformList = Linux,macOS,Windows
+build_property.TargetFrameworkIdentifier = .NETCoreApp
+build_property.TargetFrameworkVersion = v10.0
+build_property.EntryPointFilePath = 
+build_property.RootNamespace = ControlViveresApp
+build_property.RootNamespace = ControlViveresApp
+build_property.ProjectDir = C:\Users\jonat\ControlViveres\ControlViveresApp\
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 
+build_property.RazorLangVersion = 10.0
+build_property.SupportLocalizedComponentNames = 
+build_property.GenerateRazorMetadataSourceChecksumAttributes = 
+build_property.MSBuildProjectDirectory = C:\Users\jonat\ControlViveres\ControlViveresApp
+build_property._RazorSourceGeneratorDebug = 
+build_property.EffectiveAnalysisLevelStyle = 10.0
+build_property.EnableCodeStyleSeverity = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Alimentos/Crear.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWxpbWVudG9zXENyZWFyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Alimentos/Editar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWxpbWVudG9zXEVkaXRhci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Alimentos/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWxpbWVudG9zXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/cuentas/AccesoDenegado.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcY3VlbnRhc1xBY2Nlc29EZW5lZ2Fkby5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/cuentas/IniciarSesion.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcY3VlbnRhc1xJbmljaWFyU2VzaW9uLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Entregas/Crear.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW50cmVnYXNcQ3JlYXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Entregas/Editar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW50cmVnYXNcRWRpdGFyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Entregas/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW50cmVnYXNcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Entregas/_FormularioEntrega.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW50cmVnYXNcX0Zvcm11bGFyaW9FbnRyZWdhLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Inicio/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5pY2lvXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Inicio/Privacidad.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSW5pY2lvXFByaXZhY2lkYWQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Pedidos/Crear.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGVkaWRvc1xDcmVhci5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Pedidos/Editar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGVkaWRvc1xFZGl0YXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Pedidos/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGVkaWRvc1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Pedidos/_FormularioPedido.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUGVkaWRvc1xfRm9ybXVsYXJpb1BlZGlkby5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Shared/Error.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Shared/_ValidationScriptsPartial.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/_ViewImports.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/_ViewStart.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Shared/_Layout.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = b-7j5z8axnk2

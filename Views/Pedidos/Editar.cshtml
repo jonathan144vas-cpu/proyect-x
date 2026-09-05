@@ -1,0 +1,29 @@
+@model Pedido
+
+@{
+    ViewData["Title"] = "Editar Pedido";
+}
+
+<div class="container-fluid">
+    <div class="header-panel">
+        <h2>Editar Pedido</h2>
+    </div>
+
+    <div class="form-card">
+        <form asp-action="Editar" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <partial name="_FormularioPedido" model="Model" />
+
+            <div class="form-buttons">
+                <button type="submit" class="btn-guardar">Guardar Cambios</button>
+                <a asp-action="Index" class="btn-cancelar">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

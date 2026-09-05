@@ -1,0 +1,28 @@
+@model Entrega
+
+@{
+    ViewData["Title"] = "Nueva Entrega";
+}
+
+<div class="container-fluid">
+    <div class="header-panel">
+        <h2>Nueva Entrega</h2>
+    </div>
+
+    <div class="form-card">
+        <form asp-action="Crear" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <partial name="_FormularioEntrega" model="Model" />
+
+            <div class="form-buttons">
+                <button type="submit" class="btn-guardar">Guardar</button>
+                <a asp-action="Index" class="btn-cancelar">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

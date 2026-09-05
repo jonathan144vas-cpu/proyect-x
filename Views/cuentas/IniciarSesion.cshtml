@@ -1,0 +1,87 @@
+@model InicioSesion
+
+@{
+    ViewData["Title"] = "Iniciar Sesión";
+    Layout = null; // Pantalla limpia y centrada, sin el menú lateral.
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iniciar Sesión - Control de Víveres</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="login-pagina">
+    <div class="login-contenedor">
+
+        <!-- Lado izquierdo: marca y características -->
+        <div class="login-marca">
+            <h1>VÍVERES</h1>
+            <p>Gestión Integral del Inventario de Alimentos</p>
+
+            <div class="login-caracteristicas">
+                <div class="login-caracteristica">
+                    <i class="bi bi-shield-lock-fill"></i>
+                    <div>
+                        <strong>Seguro</strong>
+                        <span>Autenticación protegida por roles</span>
+                    </div>
+                </div>
+                <div class="login-caracteristica">
+                    <i class="bi bi-lightning-charge-fill"></i>
+                    <div>
+                        <strong>Rápido</strong>
+                        <span>Gestión eficiente del inventario</span>
+                    </div>
+                </div>
+                <div class="login-caracteristica">
+                    <i class="bi bi-people-fill"></i>
+                    <div>
+                        <strong>Colaborativo</strong>
+                        <span>Trabajo en equipo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lado derecho: formulario -->
+        <div class="login-tarjeta">
+            <h2>¡Bienvenido!</h2>
+            <p>Ingresa tus datos para entrar al sistema</p>
+
+            <form asp-action="IniciarSesion" asp-route-urlRetorno="@ViewData["UrlRetorno"]" method="post">
+                <div asp-validation-summary="ModelOnly" class="login-error"></div>
+
+                <div class="form-group">
+                    <label asp-for="NombreUsuario"></label>
+                    <input asp-for="NombreUsuario" class="form-control" placeholder="Escribe tu usuario" autofocus />
+                    <span asp-validation-for="NombreUsuario" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Contrasena"></label>
+                    <input asp-for="Contrasena" class="form-control" placeholder="••••••••" />
+                    <span asp-validation-for="Contrasena" class="text-danger"></span>
+                </div>
+
+                <div class="form-group login-recordarme">
+                    <input asp-for="Recordarme" />
+                    <label asp-for="Recordarme"></label>
+                </div>
+
+                <button type="submit" class="btn-guardar" style="width: 100%; padding: 0.85rem; font-size: 1rem; background-color: var(--primary);">
+                    Iniciar Sesión
+                </button>
+            </form>
+
+        </div>
+    </div>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <partial name="_ValidationScriptsPartial" />
+</body>
+</html>

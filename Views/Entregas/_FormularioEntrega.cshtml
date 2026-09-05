@@ -1,0 +1,62 @@
+@model Entrega
+
+@* Campos compartidos por las pantallas de Crear y Editar, para no repetirlos en las dos. *@
+
+<div class="form-group">
+    <label asp-for="Lugar"></label>
+    <input asp-for="Lugar" class="form-control" placeholder="Ej: Aldea Chisec" />
+    <span asp-validation-for="Lugar" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Departamento"></label>
+    <select asp-for="Departamento" class="form-control" asp-items="@(new SelectList(Catalogos.NombresDepartamentos))">
+        <option value="">Seleccione departamento</option>
+    </select>
+    <span asp-validation-for="Departamento" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Municipio"></label>
+    <input asp-for="Municipio" class="form-control" placeholder="Opcional. Ej: Cobán" />
+    <span asp-validation-for="Municipio" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="FechaEntrega"></label>
+    <input asp-for="FechaEntrega" type="date" class="form-control" />
+    <span asp-validation-for="FechaEntrega" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="FamiliasBeneficiadas"></label>
+    <input asp-for="FamiliasBeneficiadas" type="number" min="0" max="100000" class="form-control" />
+    <span asp-validation-for="FamiliasBeneficiadas" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="TotalEntregado"></label>
+    <input asp-for="TotalEntregado" type="number" min="0" max="1000000" class="form-control" />
+    <span asp-validation-for="TotalEntregado" class="text-danger"></span>
+</div>
+
+@* Si se dejan vacías, el controlador pone las del departamento elegido. *@
+<div class="form-group">
+    <label asp-for="Latitud"></label>
+    <input asp-for="Latitud" type="number" step="any" class="form-control"
+           placeholder="Opcional. Se toma la del departamento si se deja vacía" />
+    <span asp-validation-for="Latitud" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Longitud"></label>
+    <input asp-for="Longitud" type="number" step="any" class="form-control"
+           placeholder="Opcional. Se toma la del departamento si se deja vacía" />
+    <span asp-validation-for="Longitud" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Observaciones"></label>
+    <textarea asp-for="Observaciones" class="form-control" placeholder="Opcional"></textarea>
+    <span asp-validation-for="Observaciones" class="text-danger"></span>
+</div>

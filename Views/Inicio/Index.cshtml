@@ -1,0 +1,16 @@
+@{
+    ViewData["Title"] = "Inicio";
+}
+
+<div class="container-fluid">
+    <div class="form-card" style="max-width: 620px; margin: 3rem auto; text-align: center;">
+        <h1 style="font-size: 1.75rem; font-weight: 700; color: #f8fafc;">Control de Víveres</h1>
+        <p style="color: #94a3b8; margin-top: 0.75rem;">
+            Sistema para llevar el inventario de alimentos y avisar cuáles están por vencer.
+        </p>
+
+        <div class="form-buttons" style="justify-content: center; margin-top: 1.5rem;">
+            <a asp-controller="Alimentos" asp-action="Index" class="btn-guardar">Ir al inventario</a>
+        </div>
+    </div>
+</div>

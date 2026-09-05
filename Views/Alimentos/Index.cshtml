@@ -1,0 +1,221 @@
+@model IEnumerable<Alimento>
+
+@{
+    ViewData["Title"] = "Inventario de Víveres";
+
+    var hoy = DateOnly.FromDateTime(DateTime.Now);
+    var esAdmin = User.IsInRole("Admin");
+    var buscarActual = ViewBag.Buscar as string;
+    var categoriaActual = ViewBag.Categoria as string;
+
+    var totalArticulos = Model.Count();
+    var porVencer = Model.Count(a => a.FechaVencimiento is DateOnly f
+                                     && f.DayNumber >= hoy.DayNumber
+                                     && f.DayNumber - hoy.DayNumber <= 7);
+    var vencidos = Model.Count(a => a.FechaVencimiento is DateOnly f && f.DayNumber < hoy.DayNumber);
+
+    var totalColumnas = esAdmin ? 7 : 6;
+
+    var campania = ViewBag.Campania as OpcionesCampania ?? new OpcionesCampania();
+    var recaudado = (int)(ViewBag.TotalRecaudado ?? 0);
+    var porcentaje = (int)(ViewBag.PorcentajeMeta ?? 0);
+    var faltante = Math.Max(0, campania.MetaUnidades - recaudado);
+}
+
+<div class="container-fluid">
+    <div class="header-panel">
+        <div>
+            <h2><i class="bi bi-basket"></i> Inventario de Víveres</h2>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
+                Sesión actual: <strong>@User.Identity?.Name</strong>
+                @(esAdmin ? "(Administrador)" : "(Lector)")
+            </p>
+        </div>
+
+        @if (esAdmin)
+        {
+            <a asp-action="Crear" class="btn-nuevo">+ Agregar Alimento</a>
+        }
+    </div>
+
+    <!-- ===== META DE LA CAMPAÑA ===== -->
+    <div class="panel-campania">
+        <div class="campania-encabezado">
+            <div>
+                <p class="campania-etiqueta"><i class="bi bi-heart-fill"></i> @campania.Nombre</p>
+                @if (!string.IsNullOrWhiteSpace(campania.Destino))
+                {
+                    <p class="campania-destino"><i class="bi bi-geo-alt"></i> @campania.Destino</p>
+                }
+            </div>
+            <div class="campania-cifra">
+                <span class="campania-porcentaje" data-contador="@porcentaje">0</span><span class="campania-simbolo">%</span>
+            </div>
+        </div>
+
+        <div class="progreso-barra" role="progressbar" aria-valuenow="@porcentaje" aria-valuemin="0" aria-valuemax="100"
+             aria-label="Progreso de la meta de recolección">
+            <div class="progreso-relleno" style="--progreso: @porcentaje%;"></div>
+        </div>
+
+        <div class="campania-pie">
+            <span><strong>@recaudado</strong> recaudado</span>
+            @if (faltante > 0)
+            {
+                <span>faltan <strong>@faltante</strong></span>
+            }
+            else
+            {
+                <span class="campania-lograda"><i class="bi bi-check-circle-fill"></i> ¡Meta alcanzada!</span>
+            }
+            <span>meta: <strong>@campania.MetaUnidades</strong></span>
+        </div>
+    </div>
+
+    <div class="tarjetas-resumen">
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Artículos</div>
+            <div class="tarjeta-valor">@totalArticulos</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Por vencer (7 días)</div>
+            <div class="tarjeta-valor" style="color: #fbbf24;">@porVencer</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Vencidos</div>
+            <div class="tarjeta-valor" style="color: #f87171;">@vencidos</div>
+        </div>
+    </div>
+
+    <form method="get" class="filtros">
+        <input type="text" name="buscar" placeholder="Buscar alimento..." value="@buscarActual" />
+        <select name="categoria" asp-items="@(new SelectList(Catalogos.Categorias, categoriaActual))">
+            <option value="">Todas las categorías</option>
+        </select>
+        <button type="submit">Filtrar</button>
+    </form>
+
+    <div class="tabla-responsive">
+        <table class="tabla-viveres">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Cantidad</th>
+                    <th>Unidad</th>
+                    <th>Vencimiento</th>
+                    <th>Estado</th>
+                    @if (esAdmin)
+                    {
+                        <th>Acciones</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="@totalColumnas" style="text-align: center; color: #94a3b8; padding: 2rem;">
+                            No hay alimentos que coincidan con la búsqueda.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        var estadoTexto = "Sin fecha";
+                        var estadoClase = "etiqueta etiqueta-gris";
+
+                        if (item.FechaVencimiento is DateOnly vencimiento)
+                        {
+                            var diasRestantes = vencimiento.DayNumber - hoy.DayNumber;
+
+                            if (diasRestantes < 0)
+                            {
+                                estadoTexto = "¡VENCIDO!";
+                                estadoClase = "etiqueta etiqueta-roja";
+                            }
+                            else if (diasRestantes == 0)
+                            {
+                                estadoTexto = "Vence hoy";
+                                estadoClase = "etiqueta etiqueta-ambar";
+                            }
+                            else if (diasRestantes <= 7)
+                            {
+                                estadoTexto = $"Vence en {diasRestantes} d";
+                                estadoClase = "etiqueta etiqueta-ambar";
+                            }
+                            else
+                            {
+                                estadoTexto = "Buen estado";
+                                estadoClase = "etiqueta etiqueta-verde";
+                            }
+                        }
+
+                        <tr>
+                            <td data-label="Nombre"><strong>@item.Nombre</strong></td>
+                            <td data-label="Categoría">@item.Categoria</td>
+                            <td data-label="Cantidad">@item.Cantidad</td>
+                            <td data-label="Unidad">@item.UnidadMedida</td>
+                            <td data-label="Vencimiento">
+                                @(item.FechaVencimiento?.ToString("dd/MM/yyyy") ?? "N/A")
+                            </td>
+                            <td data-label="Estado">
+                                <span class="@estadoClase">@estadoTexto</span>
+                            </td>
+                            @if (esAdmin)
+                            {
+                                <td data-label="Acciones" class="acciones">
+                                    @* Lleva al formulario de pedido ya lleno con los datos de este alimento. *@
+                                    <a asp-controller="Pedidos" asp-action="Crear"
+                                       asp-route-articulo="@item.Nombre"
+                                       asp-route-categoria="@item.Categoria"
+                                       asp-route-unidadMedida="@item.UnidadMedida"
+                                       class="btn-pedir">Pedir</a>
+
+                                    <a asp-action="Editar" asp-route-id="@item.Id" class="btn-editar">Editar</a>
+
+                                    <form asp-action="Eliminar" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                        <button type="button" class="btn-eliminar js-eliminar" data-nombre="@item.Nombre">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Se usan atributos data-* y no onclick="...('@@item.Nombre')" porque un nombre
+        // con apóstrofo (por ejemplo "Frijol d'agua") rompería el JavaScript generado.
+        document.querySelectorAll('.js-eliminar').forEach(function (boton) {
+            boton.addEventListener('click', function () {
+                var formulario = boton.closest('form');
+
+                Swal.fire({
+                    title: '¿Eliminar alimento?',
+                    text: 'Estás a punto de eliminar "' + boton.dataset.nombre + '". Esta acción no se puede deshacer.',
+                    icon: 'warning',
+                    background: '#1e293b',
+                    color: '#f8fafc',
+                    showCancelButton: true,
+                    confirmButtonColor: '#ef4444',
+                    cancelButtonColor: '#475569',
+                    confirmButtonText: 'Sí, eliminar',
+                    cancelButtonText: 'Cancelar'
+                }).then(function (resultado) {
+                    if (resultado.isConfirmed) {
+                        formulario.submit();
+                    }
+                });
+            });
+        });
+    </script>
+}
