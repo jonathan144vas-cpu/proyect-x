@@ -1,0 +1,149 @@
+@model EntregaProgramada
+
+@* Campos compartidos por las pantallas de Crear y Editar, para no repetirlos en las dos. *@
+
+<div class="form-group">
+    <label asp-for="Lugar"></label>
+    <input asp-for="Lugar" class="form-control" placeholder="Ej: Aldea Chisec" />
+    <span asp-validation-for="Lugar" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Departamento"></label>
+    <select asp-for="Departamento" id="selectDepartamento" class="form-control"
+            asp-items="@(new SelectList(Catalogos.NombresDepartamentos))">
+        <option value="">Seleccione departamento</option>
+    </select>
+    <span asp-validation-for="Departamento" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Municipio"></label>
+    <select asp-for="Municipio" id="selectMunicipio" class="form-control">
+        <option value="">Seleccione municipio</option>
+        @foreach (var municipio in Catalogos.MunicipiosDe(Model.Departamento))
+        {
+            <option value="@municipio" selected="@(municipio == Model.Municipio)">@municipio</option>
+        }
+    </select>
+    <span asp-validation-for="Municipio" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="FechaProgramada"></label>
+    <input asp-for="FechaProgramada" type="date" class="form-control" />
+    <span asp-validation-for="FechaProgramada" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="FamiliasBeneficiadas"></label>
+    <input asp-for="FamiliasBeneficiadas" type="number" min="0" max="100000" class="form-control" />
+    <span asp-validation-for="FamiliasBeneficiadas" class="text-danger"></span>
+</div>
+
+<div class="form-group">
+    <label asp-for="Observaciones"></label>
+    <textarea asp-for="Observaciones" class="form-control" placeholder="Opcional"></textarea>
+    <span asp-validation-for="Observaciones" class="text-danger"></span>
+</div>
+
+<h5 style="margin-top: 1.5rem;">Lo que se entregó</h5>
+<div class="tabla-responsive">
+    <table class="tabla-viveres" id="tablaDetalles">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Sistema de medida</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="cuerpoDetalles">
+            @for (var i = 0; i < Model.Detalles.Count; i++)
+            {
+                <tr class="fila-detalle">
+                    <td>
+                        <input name="Detalles[@i].Producto" value="@Model.Detalles[i].Producto"
+                               class="form-control" placeholder="Ej: Arroz" />
+                    </td>
+                    <td>
+                        <select name="Detalles[@i].SistemaMedida" class="form-control" asp-items="@(new SelectList(Catalogos.UnidadesMedida, Model.Detalles[i].SistemaMedida))">
+                            <option value="">Seleccione</option>
+                        </select>
+                    </td>
+                    <td>
+                        <input name="Detalles[@i].Total" type="number" step="0.01" min="0" value="@(Model.Detalles[i].Total == 0 ? "" : Model.Detalles[i].Total.ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                               class="form-control" />
+                    </td>
+                    <td>
+                        <button type="button" class="btn-eliminar btn-quitar-fila">Quitar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button type="button" id="btnAgregarFila" class="btn-editar" style="margin-top: 0.5rem;">+ Agregar producto</button>
+</div>
+
+<template id="plantillaFilaDetalle">
+    <tr class="fila-detalle">
+        <td>
+            <input name="Detalles[__INDICE__].Producto" class="form-control" placeholder="Ej: Arroz" />
+        </td>
+        <td>
+            <select name="Detalles[__INDICE__].SistemaMedida" class="form-control">
+                <option value="">Seleccione</option>
+                @foreach (var unidad in Catalogos.UnidadesMedida)
+                {
+                    <option value="@unidad">@unidad</option>
+                }
+            </select>
+        </td>
+        <td>
+            <input name="Detalles[__INDICE__].Total" type="number" step="0.01" min="0" class="form-control" />
+        </td>
+        <td>
+            <button type="button" class="btn-eliminar btn-quitar-fila">Quitar</button>
+        </td>
+    </tr>
+</template>
+
+<script>
+    (function () {
+        var municipiosPorDepartamento = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Catalogos.MunicipiosPorDepartamento));
+
+        var selectDepartamento = document.getElementById('selectDepartamento');
+        var selectMunicipio = document.getElementById('selectMunicipio');
+
+        selectDepartamento.addEventListener('change', function () {
+            var municipios = municipiosPorDepartamento[selectDepartamento.value] || [];
+            selectMunicipio.innerHTML = '<option value="">Seleccione municipio</option>';
+            municipios.forEach(function (municipio) {
+                var opcion = document.createElement('option');
+                opcion.value = municipio;
+                opcion.textContent = municipio;
+                selectMunicipio.appendChild(opcion);
+            });
+        });
+
+        var cuerpoDetalles = document.getElementById('cuerpoDetalles');
+        var plantilla = document.getElementById('plantillaFilaDetalle');
+        var siguienteIndice = cuerpoDetalles.querySelectorAll('.fila-detalle').length;
+
+        document.getElementById('btnAgregarFila').addEventListener('click', function () {
+            var html = plantilla.innerHTML.split('__INDICE__').join(siguienteIndice);
+            var envoltorio = document.createElement('tbody');
+            envoltorio.innerHTML = html;
+            cuerpoDetalles.appendChild(envoltorio.firstElementChild);
+            siguienteIndice++;
+        });
+
+        cuerpoDetalles.addEventListener('click', function (evento) {
+            if (evento.target.classList.contains('btn-quitar-fila')) {
+                if (cuerpoDetalles.querySelectorAll('.fila-detalle').length > 1) {
+                    evento.target.closest('.fila-detalle').remove();
+                }
+            }
+        });
+    })();
+</script>

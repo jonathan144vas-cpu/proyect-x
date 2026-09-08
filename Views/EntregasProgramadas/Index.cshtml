@@ -1,0 +1,206 @@
+@model IEnumerable<EntregaProgramada>
+
+@{
+    ViewData["Title"] = "Entregas Programadas";
+
+    var esAdmin = User.IsInRole("Admin");
+    var buscarActual = ViewBag.Buscar as string;
+    var departamentoActual = ViewBag.Departamento as string;
+    var estadoActual = ViewBag.Estado as EstadoEntregaProgramada?;
+
+    var totalProgramadas = (int)(ViewBag.TotalProgramadas ?? 0);
+    var totalCompletadas = (int)(ViewBag.TotalCompletadas ?? 0);
+
+    var totalColumnas = esAdmin ? 6 : 5;
+
+    string ClaseEstado(EstadoEntregaProgramada estado) => estado switch
+    {
+        EstadoEntregaProgramada.Programada => "etiqueta etiqueta-ambar",
+        EstadoEntregaProgramada.Completada => "etiqueta etiqueta-verde",
+        _ => "etiqueta etiqueta-gris"
+    };
+}
+
+<div class="container-fluid">
+    <div class="header-panel">
+        <div>
+            <h2><i class="bi bi-truck"></i> Entregas Programadas</h2>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
+                Entregas planeadas hacia lugares por visitar
+            </p>
+        </div>
+
+        @if (esAdmin)
+        {
+            <a asp-action="Crear" class="btn-nuevo">+ Nueva Entrega Programada</a>
+        }
+    </div>
+
+    <div class="tarjetas-resumen">
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Programadas</div>
+            <div class="tarjeta-valor" style="color: #fbbf24;">@totalProgramadas</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Completadas</div>
+            <div class="tarjeta-valor" style="color: #4ade80;">@totalCompletadas</div>
+        </div>
+    </div>
+
+    <form method="get" class="filtros">
+        <input type="text" name="buscar" placeholder="Buscar lugar o municipio..." value="@buscarActual" />
+        <select name="departamento" asp-items="@(new SelectList(Catalogos.NombresDepartamentos, departamentoActual))">
+            <option value="">Todos los departamentos</option>
+        </select>
+        <select name="estado" asp-items="@(new SelectList(Html.GetEnumSelectList<EstadoEntregaProgramada>(), "Value", "Text", ((int?)estadoActual)?.ToString()))">
+            <option value="">Todos los estados</option>
+        </select>
+        <button type="submit">Filtrar</button>
+    </form>
+
+    <div class="tabla-responsive">
+        <table class="tabla-viveres">
+            <thead>
+                <tr>
+                    <th>Lugar</th>
+                    <th>Departamento / Municipio</th>
+                    <th>Fecha programada</th>
+                    <th>Familias</th>
+                    <th>Estado</th>
+                    @if (esAdmin)
+                    {
+                        <th>Acciones</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="@totalColumnas" style="text-align: center; color: #94a3b8; padding: 2rem;">
+                            No hay entregas programadas que coincidan con la búsqueda.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td data-label="Lugar"><strong>@item.Lugar</strong></td>
+                            <td data-label="Departamento / Municipio">@item.Municipio, @item.Departamento</td>
+                            <td data-label="Fecha programada">@item.FechaProgramada.ToString("dd/MM/yyyy")</td>
+                            <td data-label="Familias">@item.FamiliasBeneficiadas</td>
+                            <td data-label="Estado">
+                                <span class="@ClaseEstado(item.Estado)">@item.Estado</span>
+                            </td>
+                            @if (esAdmin)
+                            {
+                                <td data-label="Acciones" class="acciones">
+                                    @if (item.Estado == EstadoEntregaProgramada.Programada)
+                                    {
+                                        <form asp-action="Completar" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                            <button type="button" class="btn-recibir js-completar" data-lugar="@item.Lugar">
+                                                Completar
+                                            </button>
+                                        </form>
+
+                                        <a asp-action="Editar" asp-route-id="@item.Id" class="btn-editar">Editar</a>
+
+                                        <form asp-action="Cancelar" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                            <button type="button" class="btn-eliminar js-cancelar" data-lugar="@item.Lugar">
+                                                Cancelar
+                                            </button>
+                                        </form>
+                                    }
+
+                                    @if (item.Estado == EstadoEntregaProgramada.Completada)
+                                    {
+                                        <a asp-action="Comprobante" asp-route-id="@item.Id" class="btn-editar" target="_blank">
+                                            Comprobante
+                                        </a>
+                                    }
+
+                                    @if (item.Estado != EstadoEntregaProgramada.Completada)
+                                    {
+                                        <form asp-action="Eliminar" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                            <button type="button" class="btn-eliminar js-eliminar" data-nombre="@item.Lugar">
+                                                Eliminar
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        @{
+            var idComprobanteEntrega = TempData["ComprobanteEntregaId"] as int?;
+        }
+        @if (idComprobanteEntrega is not null)
+        {
+            <text>
+            window.open('@Url.Action("Comprobante", new { id = idComprobanteEntrega })', '_blank');
+            </text>
+        }
+
+        function confirmar(boton, opciones) {
+            var formulario = boton.closest('form');
+
+            Swal.fire(Object.assign({
+                background: '#1e293b',
+                color: '#f8fafc',
+                showCancelButton: true,
+                cancelButtonColor: '#475569',
+                cancelButtonText: 'Cancelar'
+            }, opciones)).then(function (resultado) {
+                if (resultado.isConfirmed) {
+                    formulario.submit();
+                }
+            });
+        }
+
+        document.querySelectorAll('.js-completar').forEach(function (boton) {
+            boton.addEventListener('click', function () {
+                confirmar(boton, {
+                    title: '¿Completar entrega?',
+                    text: 'Se descontará del inventario, se registrará en el historial y se generará el comprobante de "' + boton.dataset.lugar + '".',
+                    icon: 'question',
+                    confirmButtonColor: '#10b981',
+                    confirmButtonText: 'Sí, completar'
+                });
+            });
+        });
+
+        document.querySelectorAll('.js-cancelar').forEach(function (boton) {
+            boton.addEventListener('click', function () {
+                confirmar(boton, {
+                    title: '¿Cancelar entrega?',
+                    text: 'Se cancelará la entrega programada a "' + boton.dataset.lugar + '".',
+                    icon: 'warning',
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'Sí, cancelar'
+                });
+            });
+        });
+
+        document.querySelectorAll('.js-eliminar').forEach(function (boton) {
+            boton.addEventListener('click', function () {
+                confirmar(boton, {
+                    title: '¿Eliminar entrega programada?',
+                    text: 'Estás a punto de eliminar la entrega a "' + boton.dataset.nombre + '".',
+                    icon: 'warning',
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'Sí, eliminar'
+                });
+            });
+        });
+    </script>
+}

@@ -21,7 +21,7 @@ namespace ControlViveresApp.Controllers
             // Si ya inició sesión, no tiene sentido mostrarle el formulario otra vez.
             if (User.Identity?.IsAuthenticated == true)
             {
-                return RedirectToAction("Index", "Alimentos");
+                return RedirectToAction("Index", "Inicio");
             }
 
             ViewData["UrlRetorno"] = urlRetorno;
@@ -53,7 +53,7 @@ namespace ControlViveresApp.Controllers
                     return Redirect(urlRetorno);
                 }
 
-                return RedirectToAction("Index", "Alimentos");
+                return RedirectToAction("Index", "Inicio");
             }
 
             if (resultado.IsLockedOut)

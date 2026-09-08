@@ -51,20 +51,24 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcY3VlbnRhc1xJbmljaWFyU2VzaW9uLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Entregas/Crear.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW50cmVnYXNcQ3JlYXIuY3NodG1s
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/EntregasProgramadas/Crear.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW50cmVnYXNQcm9ncmFtYWRhc1xDcmVhci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Entregas/Editar.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW50cmVnYXNcRWRpdGFyLmNzaHRtbA==
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/EntregasProgramadas/Editar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW50cmVnYXNQcm9ncmFtYWRhc1xFZGl0YXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/EntregasProgramadas/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW50cmVnYXNQcm9ncmFtYWRhc1xJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/EntregasProgramadas/_FormularioEntregaProgramada.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW50cmVnYXNQcm9ncmFtYWRhc1xfRm9ybXVsYXJpb0VudHJlZ2FQcm9ncmFtYWRhLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Entregas/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW50cmVnYXNcSW5kZXguY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Entregas/_FormularioEntrega.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRW50cmVnYXNcX0Zvcm11bGFyaW9FbnRyZWdhLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Inicio/Index.cshtml]

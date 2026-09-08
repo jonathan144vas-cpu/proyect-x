@@ -1,12 +1,12 @@
-@model Entrega
+@model EntregaProgramada
 
 @{
-    ViewData["Title"] = "Editar Entrega";
+    ViewData["Title"] = "Editar Entrega Programada";
 }
 
 <div class="container-fluid">
     <div class="header-panel">
-        <h2>Editar Entrega</h2>
+        <h2>Editar Entrega Programada</h2>
     </div>
 
     <div class="form-card">
@@ -14,7 +14,7 @@
             <input type="hidden" asp-for="Id" />
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <partial name="_FormularioEntrega" model="Model" />
+            <partial name="_FormularioEntregaProgramada" model="Model" />
 
             <div class="form-buttons">
                 <button type="submit" class="btn-guardar">Guardar Cambios</button>

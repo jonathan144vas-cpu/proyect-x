@@ -63,6 +63,37 @@ namespace ControlViveresApp.Migrations
                     b.ToTable("Alimentos");
                 });
 
+            modelBuilder.Entity("ControlViveresApp.Models.DetalleEntregaProgramada", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("EntregaProgramadaId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Producto")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("SistemaMedida")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.Property<decimal>("Total")
+                        .HasColumnType("numeric");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EntregaProgramadaId");
+
+                    b.ToTable("DetallesEntregaProgramada");
+                });
+
             modelBuilder.Entity("ControlViveresApp.Models.Entrega", b =>
                 {
                     b.Property<int>("Id")
@@ -120,6 +151,63 @@ namespace ControlViveresApp.Migrations
                     b.ToTable("Entregas");
                 });
 
+            modelBuilder.Entity("ControlViveresApp.Models.EntregaProgramada", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Departamento")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<int>("FamiliasBeneficiadas")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("FechaCompletada")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("FechaProgramada")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Lugar")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<string>("Municipio")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<string>("RegistradoPor")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Departamento");
+
+                    b.HasIndex("Estado");
+
+                    b.ToTable("EntregasProgramadas");
+                });
+
             modelBuilder.Entity("ControlViveresApp.Models.Pedido", b =>
                 {
                     b.Property<int>("Id")
@@ -159,6 +247,9 @@ namespace ControlViveresApp.Migrations
 
                     b.Property<DateTime>("FechaSolicitud")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly?>("FechaVencimiento")
+                        .HasColumnType("date");
 
                     b.Property<string>("Observaciones")
                         .HasMaxLength(400)
@@ -392,6 +483,17 @@ namespace ControlViveresApp.Migrations
                     b.ToTable("UsuariosTokens", (string)null);
                 });
 
+            modelBuilder.Entity("ControlViveresApp.Models.DetalleEntregaProgramada", b =>
+                {
+                    b.HasOne("ControlViveresApp.Models.EntregaProgramada", "EntregaProgramada")
+                        .WithMany("Detalles")
+                        .HasForeignKey("EntregaProgramadaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EntregaProgramada");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -441,6 +543,11 @@ namespace ControlViveresApp.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("ControlViveresApp.Models.EntregaProgramada", b =>
+                {
+                    b.Navigation("Detalles");
                 });
 #pragma warning restore 612, 618
         }

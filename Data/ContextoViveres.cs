@@ -22,6 +22,10 @@ namespace ControlViveresApp.Data
 
         public DbSet<Entrega> Entregas => Set<Entrega>();
 
+        public DbSet<EntregaProgramada> EntregasProgramadas => Set<EntregaProgramada>();
+
+        public DbSet<DetalleEntregaProgramada> DetallesEntregaProgramada => Set<DetalleEntregaProgramada>();
+
         protected override void OnModelCreating(ModelBuilder constructor)
         {
             base.OnModelCreating(constructor);
@@ -58,6 +62,19 @@ namespace ControlViveresApp.Data
             {
                 entrega.HasIndex(e => e.Departamento);
                 entrega.HasIndex(e => e.FechaEntrega);
+            });
+
+            constructor.Entity<EntregaProgramada>(entregaProgramada =>
+            {
+                entregaProgramada.Property(e => e.Estado).HasConversion<string>().HasMaxLength(20);
+
+                entregaProgramada.HasIndex(e => e.Departamento);
+                entregaProgramada.HasIndex(e => e.Estado);
+
+                entregaProgramada.HasMany(e => e.Detalles)
+                    .WithOne(d => d.EntregaProgramada)
+                    .HasForeignKey(d => d.EntregaProgramadaId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

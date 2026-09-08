@@ -1,0 +1,7 @@
+bin/
+obj/
+.vs/
+.claude/
+*.dll
+*.exe
+wwwroot/lib/

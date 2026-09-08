@@ -3,7 +3,6 @@
 @{
     ViewData["Title"] = "Lugares Visitados";
 
-    var esAdmin = User.IsInRole("Admin");
     var buscarActual = ViewBag.Buscar as string;
     var departamentoActual = ViewBag.Departamento as string;
 
@@ -14,8 +13,8 @@
     var totalEntregado = (int)(ViewBag.TotalEntregado ?? 0);
     var totalDepartamentos = (int)(ViewBag.TotalDepartamentos ?? 0);
 
-    // Columnas: Lugar, Departamento, Fecha, Familias, Entregado, Ubicación (+ Acciones)
-    var totalColumnas = esAdmin ? 7 : 6;
+    // Columnas: Lugar, Departamento, Fecha, Familias, Entregado
+    var totalColumnas = 5;
 }
 
 <div class="container-fluid">
@@ -23,14 +22,9 @@
         <div>
             <h2><i class="bi bi-geo-alt-fill"></i> Lugares Visitados</h2>
             <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
-                Comunidades de Guatemala donde ya se entregaron víveres
+                Historial de comunidades de Guatemala donde ya se entregaron víveres (solo lectura)
             </p>
         </div>
-
-        @if (esAdmin)
-        {
-            <a asp-action="Crear" class="btn-nuevo">+ Nueva Entrega</a>
-        }
     </div>
 
     <div class="tarjetas-resumen">
@@ -69,11 +63,6 @@
                     <th>Fecha</th>
                     <th>Familias</th>
                     <th>Entregado</th>
-                    <th>Ubicación</th>
-                    @if (esAdmin)
-                    {
-                        <th>Acciones</th>
-                    }
                 </tr>
             </thead>
             <tbody>
@@ -101,32 +90,6 @@
                             <td data-label="Fecha">@item.FechaEntrega.ToString("dd/MM/yyyy")</td>
                             <td data-label="Familias">@item.FamiliasBeneficiadas</td>
                             <td data-label="Entregado">@item.TotalEntregado</td>
-                            <td data-label="Ubicación">
-                                @if (item.Latitud is double lat && item.Longitud is double lon)
-                                {
-                                    @* Enlace al mapa mientras no exista la vista de mapa propia. *@
-                                    <a href="https://www.openstreetmap.org/?mlat=@lat.ToString(System.Globalization.CultureInfo.InvariantCulture)&mlon=@lon.ToString(System.Globalization.CultureInfo.InvariantCulture)#map=11/@lat.ToString(System.Globalization.CultureInfo.InvariantCulture)/@lon.ToString(System.Globalization.CultureInfo.InvariantCulture)"
-                                       target="_blank" rel="noopener" class="etiqueta etiqueta-azul">
-                                        <i class="bi bi-map"></i> Ver mapa
-                                    </a>
-                                }
-                                else
-                                {
-                                    <span class="etiqueta etiqueta-gris">Sin coordenadas</span>
-                                }
-                            </td>
-                            @if (esAdmin)
-                            {
-                                <td data-label="Acciones" class="acciones">
-                                    <a asp-action="Editar" asp-route-id="@item.Id" class="btn-editar">Editar</a>
-
-                                    <form asp-action="Eliminar" asp-route-id="@item.Id" method="post" style="display:inline;">
-                                        <button type="button" class="btn-eliminar js-eliminar" data-nombre="@item.Lugar">
-                                            Eliminar
-                                        </button>
-                                    </form>
-                                </td>
-                            }
                         </tr>
                     }
                 }
@@ -134,32 +97,3 @@
         </table>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        // Se usan atributos data-* y no onclick="...('@@item.Lugar')" porque un nombre
-        // con apóstrofo (por ejemplo "Aldea d'Oro") rompería el JavaScript generado.
-        document.querySelectorAll('.js-eliminar').forEach(function (boton) {
-            boton.addEventListener('click', function () {
-                var formulario = boton.closest('form');
-
-                Swal.fire({
-                    title: '¿Eliminar entrega?',
-                    text: 'Estás a punto de eliminar el registro de "' + boton.dataset.nombre + '". Esta acción no se puede deshacer.',
-                    icon: 'warning',
-                    background: '#1e293b',
-                    color: '#f8fafc',
-                    showCancelButton: true,
-                    confirmButtonColor: '#ef4444',
-                    cancelButtonColor: '#475569',
-                    confirmButtonText: 'Sí, eliminar',
-                    cancelButtonText: 'Cancelar'
-                }).then(function (resultado) {
-                    if (resultado.isConfirmed) {
-                        formulario.submit();
-                    }
-                });
-            });
-        });
-    </script>
-}

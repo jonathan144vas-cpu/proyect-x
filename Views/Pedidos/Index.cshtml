@@ -131,6 +131,13 @@
                                         </form>
                                     }
 
+                                    @if (item.Estado == EstadoPedido.Recibido)
+                                    {
+                                        <a asp-action="ComprobanteRecepcion" asp-route-id="@item.Id" class="btn-editar" target="_blank">
+                                            Comprobante
+                                        </a>
+                                    }
+
                                     <a asp-action="Editar" asp-route-id="@item.Id" class="btn-editar">Editar</a>
 
                                     <form asp-action="Eliminar" asp-route-id="@item.Id" method="post" style="display:inline;">
@@ -150,6 +157,16 @@
 
 @section Scripts {
     <script>
+        @{
+            var idComprobante = TempData["ComprobanteRecepcionId"] as int?;
+        }
+        @if (idComprobante is not null)
+        {
+            <text>
+            window.open('@Url.Action("ComprobanteRecepcion", new { id = idComprobante })', '_blank');
+            </text>
+        }
+
         function confirmar(boton, opciones) {
             var formulario = boton.closest('form');
 

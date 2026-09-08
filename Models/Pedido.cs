@@ -62,6 +62,13 @@ namespace ControlViveresApp.Models
         [Display(Name = "Se necesita para")]
         public DateOnly? FechaNecesaria { get; set; }
 
+        // Fecha de vencimiento del lote que se va a recibir. Al marcar el pedido como
+        // Recibido, se usa para decidir si se suma a un lote existente del inventario
+        // o si se registra como un lote/registro separado (cuando la fecha difiere).
+        [DataType(DataType.Date)]
+        [Display(Name = "Fecha de vencimiento del lote")]
+        public DateOnly? FechaVencimiento { get; set; }
+
         [Display(Name = "Prioridad")]
         public PrioridadPedido Prioridad { get; set; } = PrioridadPedido.Normal;
 

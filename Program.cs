@@ -1,7 +1,11 @@
 using ControlViveresApp.Data;
 using ControlViveresApp.Models;
+using ControlViveresApp.Servicios;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Infrastructure;
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 var constructor = WebApplication.CreateBuilder(args);
 
@@ -48,6 +52,8 @@ constructor.Services.ConfigureApplicationCookie(opciones =>
 constructor.Services.Configure<OpcionesCampania>(
     constructor.Configuration.GetSection(OpcionesCampania.Seccion));
 
+constructor.Services.AddSingleton<ServicioComprobantesPdf>();
+
 constructor.Services.AddControllersWithViews();
 
 var app = constructor.Build();
@@ -85,6 +91,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Alimentos}/{action=Index}/{id?}");
+    pattern: "{controller=Inicio}/{action=Index}/{id?}");
 
 app.Run();

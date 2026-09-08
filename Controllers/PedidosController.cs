@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ControlViveresApp.Data;
 using ControlViveresApp.Models;
+using ControlViveresApp.Servicios;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -13,10 +14,12 @@ namespace ControlViveresApp.Controllers
     public class PedidosController : Controller
     {
         private readonly ContextoViveres _contexto;
+        private readonly ServicioComprobantesPdf _servicioPdf;
 
-        public PedidosController(ContextoViveres contexto)
+        public PedidosController(ContextoViveres contexto, ServicioComprobantesPdf servicioPdf)
         {
             _contexto = contexto;
+            _servicioPdf = servicioPdf;
         }
 
         // 1. LISTAR PEDIDOS
@@ -66,7 +69,7 @@ namespace ControlViveresApp.Controllers
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Crear(
-            [Bind("Articulo,Categoria,Cantidad,UnidadMedida,Proveedor,FechaNecesaria,Prioridad,Estado,Observaciones")] Pedido pedido)
+            [Bind("Articulo,Categoria,Cantidad,UnidadMedida,Proveedor,FechaNecesaria,FechaVencimiento,Prioridad,Estado,Observaciones")] Pedido pedido)
         {
             ValidarCatalogos(pedido);
 
@@ -105,7 +108,7 @@ namespace ControlViveresApp.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Editar(
             int id,
-            [Bind("Id,Articulo,Categoria,Cantidad,UnidadMedida,Proveedor,FechaNecesaria,Prioridad,Estado,Observaciones")] Pedido pedido)
+            [Bind("Id,Articulo,Categoria,Cantidad,UnidadMedida,Proveedor,FechaNecesaria,FechaVencimiento,Prioridad,Estado,Observaciones")] Pedido pedido)
         {
             if (id != pedido.Id) return NotFound();
 
@@ -126,6 +129,7 @@ namespace ControlViveresApp.Controllers
             existente.UnidadMedida = pedido.UnidadMedida;
             existente.Proveedor = pedido.Proveedor;
             existente.FechaNecesaria = pedido.FechaNecesaria;
+            existente.FechaVencimiento = pedido.FechaVencimiento;
             existente.Prioridad = pedido.Prioridad;
             existente.Estado = pedido.Estado;
             existente.Observaciones = pedido.Observaciones;
@@ -160,13 +164,16 @@ namespace ControlViveresApp.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            // Si ya existe ese artículo en el inventario (mismo nombre y misma unidad),
-            // se le suma la cantidad. Si no existe, se crea el renglón.
+            // Si ya existe ese artículo en el inventario (mismo nombre, misma unidad y
+            // misma fecha de vencimiento), se le suma la cantidad. Si no existe, o si
+            // existe pero con una fecha de vencimiento distinta, se registra como un
+            // lote/registro separado.
             var nombreNormalizado = pedido.Articulo.Trim().ToLower();
 
             var alimento = await _contexto.Alimentos.FirstOrDefaultAsync(a =>
                 a.Nombre.ToLower() == nombreNormalizado &&
-                a.UnidadMedida == pedido.UnidadMedida);
+                a.UnidadMedida == pedido.UnidadMedida &&
+                a.FechaVencimiento == pedido.FechaVencimiento);
 
             if (alimento is null)
             {
@@ -176,6 +183,7 @@ namespace ControlViveresApp.Controllers
                     Categoria = pedido.Categoria,
                     Cantidad = pedido.Cantidad,
                     UnidadMedida = pedido.UnidadMedida,
+                    FechaVencimiento = pedido.FechaVencimiento,
                     FechaRegistro = DateTime.UtcNow
                 });
             }
@@ -190,8 +198,23 @@ namespace ControlViveresApp.Controllers
 
             TempData["Mensaje"] = $"Pedido recibido. Se agregaron {pedido.Cantidad} {pedido.UnidadMedida} de {pedido.Articulo} al inventario.";
             TempData["Tipo"] = "success";
+            TempData["ComprobanteRecepcionId"] = pedido.Id;
 
             return RedirectToAction(nameof(Index));
+        }
+
+        // 8. COMPROBANTE PDF DE RECEPCIÓN
+        public async Task<IActionResult> ComprobanteRecepcion(int id)
+        {
+            var pedido = await _contexto.Pedidos.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+
+            if (pedido is null || pedido.Estado != EstadoPedido.Recibido)
+            {
+                return NotFound();
+            }
+
+            var pdf = _servicioPdf.GenerarComprobanteRecepcion(pedido);
+            return File(pdf, "application/pdf", $"Recepcion-Pedido-{pedido.Id}.pdf");
         }
 
         // 7. ELIMINAR

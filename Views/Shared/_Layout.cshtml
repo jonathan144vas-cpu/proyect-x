@@ -40,6 +40,10 @@
                         <i class="bi bi-cart-plus-fill"></i> <span>Pedidos por realizar</span>
                     </a>
 
+                    <a asp-controller="EntregasProgramadas" asp-action="Index" class="sidebar-link @Activo("EntregasProgramadas")">
+                        <i class="bi bi-truck"></i> <span>Entregas Programadas</span>
+                    </a>
+
                     <a asp-controller="Entregas" asp-action="Index" class="sidebar-link @Activo("Entregas")">
                         <i class="bi bi-geo-alt-fill"></i> <span>Lugares visitados</span>
                     </a>

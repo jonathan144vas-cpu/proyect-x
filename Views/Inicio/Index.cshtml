@@ -3,14 +3,47 @@
 }
 
 <div class="container-fluid">
-    <div class="form-card" style="max-width: 620px; margin: 3rem auto; text-align: center;">
-        <h1 style="font-size: 1.75rem; font-weight: 700; color: #f8fafc;">Control de Víveres</h1>
+    <div class="form-card" style="max-width: 900px; margin: 2rem auto; text-align: center;">
+        <h1 style="font-size: 2rem; font-weight: 700; color: #f8fafc;">
+            Ayudemos a nuestro País a salir de la desnutrición
+        </h1>
         <p style="color: #94a3b8; margin-top: 0.75rem;">
-            Sistema para llevar el inventario de alimentos y avisar cuáles están por vencer.
+            Sistema para llevar el inventario de víveres, programar entregas y avisar
+            cuáles alimentos están por vencer.
         </p>
+    </div>
 
-        <div class="form-buttons" style="justify-content: center; margin-top: 1.5rem;">
-            <a asp-controller="Alimentos" asp-action="Index" class="btn-guardar">Ir al inventario</a>
-        </div>
+    <div class="tarjetas-accesos" style="max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+        <a asp-controller="Alimentos" asp-action="Index" class="form-card" style="text-decoration: none; color: inherit; display: block;">
+            <i class="bi bi-basket" style="font-size: 1.75rem; color: #4ade80;"></i>
+            <h3 style="margin-top: 0.75rem; color: #f8fafc;">Inventario</h3>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.5rem;">
+                Consulta y administra los víveres disponibles en bodega, por lote y fecha de vencimiento.
+            </p>
+        </a>
+
+        <a asp-controller="Pedidos" asp-action="Index" class="form-card" style="text-decoration: none; color: inherit; display: block;">
+            <i class="bi bi-cart-plus-fill" style="font-size: 1.75rem; color: #fbbf24;"></i>
+            <h3 style="margin-top: 0.75rem; color: #f8fafc;">Pedidos por realizar</h3>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.5rem;">
+                Solicita víveres que hacen falta y registra su recepción con comprobante en PDF.
+            </p>
+        </a>
+
+        <a asp-controller="EntregasProgramadas" asp-action="Index" class="form-card" style="text-decoration: none; color: inherit; display: block;">
+            <i class="bi bi-truck" style="font-size: 1.75rem; color: #93c5fd;"></i>
+            <h3 style="margin-top: 0.75rem; color: #f8fafc;">Entregas Programadas</h3>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.5rem;">
+                Programa entregas hacia comunidades por visitar y genera su comprobante al completarlas.
+            </p>
+        </a>
+
+        <a asp-controller="Entregas" asp-action="Index" class="form-card" style="text-decoration: none; color: inherit; display: block;">
+            <i class="bi bi-geo-alt-fill" style="font-size: 1.75rem; color: #f87171;"></i>
+            <h3 style="margin-top: 0.75rem; color: #f8fafc;">Lugares Visitados</h3>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.5rem;">
+                Consulta el historial de comunidades donde ya se entregaron víveres.
+            </p>
+        </a>
     </div>
 </div>
