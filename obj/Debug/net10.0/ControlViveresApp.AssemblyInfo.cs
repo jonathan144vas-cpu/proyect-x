@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ControlViveresApp")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e6c5cbe16d1e9e5b38ad633089bf81250f6f3fd8")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7b823b19f2ff0a090eb3551a8dbbe00d4b15abda")]
 [assembly: System.Reflection.AssemblyProductAttribute("ControlViveresApp")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ControlViveresApp")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

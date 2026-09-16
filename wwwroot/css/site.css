@@ -276,6 +276,45 @@ body {
     margin-top: 0.35rem;
 }
 
+/* Productos Separados */
+.grid-productos {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1rem;
+}
+
+.tarjeta-producto {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+}
+
+.tarjeta-producto-encabezado {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.6rem;
+    gap: 0.5rem;
+}
+
+.tarjeta-producto-lotes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.tarjeta-producto-lotes li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    gap: 0.5rem;
+}
+
 /* Botones */
 .btn-nuevo {
     background-color: var(--primary);
@@ -374,6 +413,25 @@ body {
     color: var(--text-main);
 }
 
+/* Acción intermedia (ni destructiva como Eliminar, ni positiva como Completar/Recibir) */
+.btn-advertencia {
+    background-color: var(--warning);
+    color: white;
+    border: none;
+    padding: 0.35rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-block;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
+}
+
+.btn-advertencia:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
 /* Etiquetas de estado */
 .etiqueta {
     padding: 0.3rem 0.6rem;
@@ -453,6 +511,24 @@ body {
 
 .tabla-viveres tr:last-child td {
     border-bottom: none;
+}
+
+/* Solo para Inventario: se ve muy apretada con tantas columnas, así que se le da
+   más aire a cada celda y más espacio entre filas. */
+.tabla-viveres-grande th {
+    padding: 1.35rem 1.5rem;
+    font-size: 0.9rem;
+}
+
+.tabla-viveres-grande td {
+    padding: 1.35rem 1.5rem;
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.tabla-viveres-grande td .etiqueta {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
 }
 
 .acciones {
@@ -830,19 +906,19 @@ textarea.form-control {
 
 /* --- Botones --- */
 .btn-nuevo, .btn-guardar, .btn-cancelar, .btn-editar,
-.btn-eliminar, .btn-recibir, .btn-pedir, .filtros button, .btn-salir {
+.btn-eliminar, .btn-recibir, .btn-pedir, .btn-advertencia, .filtros button, .btn-salir {
     transition: transform 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease,
                 border-color 0.16s ease, color 0.16s ease, opacity 0.16s ease;
 }
 
 .btn-nuevo:hover, .btn-guardar:hover, .btn-editar:hover,
-.btn-eliminar:hover, .btn-recibir:hover, .filtros button:hover {
+.btn-eliminar:hover, .btn-recibir:hover, .btn-advertencia:hover, .filtros button:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
 }
 
 .btn-nuevo:active, .btn-guardar:active, .btn-editar:active,
-.btn-eliminar:active, .btn-recibir:active, .filtros button:active {
+.btn-eliminar:active, .btn-recibir:active, .btn-advertencia:active, .filtros button:active {
     transform: translateY(0);
     box-shadow: none;
 }
@@ -1089,7 +1165,7 @@ input, select, textarea, button {
 
 /* Blancos cómodos para el dedo (mínimo recomendado: 44px) */
 @media (hover: none) and (pointer: coarse) {
-    .btn-editar, .btn-eliminar, .btn-recibir, .btn-pedir {
+    .btn-editar, .btn-eliminar, .btn-recibir, .btn-pedir, .btn-advertencia {
         min-height: 40px;
         display: inline-flex;
         align-items: center;

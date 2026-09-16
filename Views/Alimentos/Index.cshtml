@@ -14,7 +14,7 @@
                                      && f.DayNumber - hoy.DayNumber <= 7);
     var vencidos = Model.Count(a => a.FechaVencimiento is DateOnly f && f.DayNumber < hoy.DayNumber);
 
-    var totalColumnas = esAdmin ? 7 : 6;
+    var totalColumnas = esAdmin ? 8 : 7;
 
     var campania = ViewBag.Campania as OpcionesCampania ?? new OpcionesCampania();
     var recaudado = (int)(ViewBag.TotalRecaudado ?? 0);
@@ -96,7 +96,7 @@
     </form>
 
     <div class="tabla-responsive">
-        <table class="tabla-viveres">
+        <table class="tabla-viveres tabla-viveres-grande">
             <thead>
                 <tr>
                     <th>Nombre</th>
@@ -105,6 +105,7 @@
                     <th>Unidad</th>
                     <th>Vencimiento</th>
                     <th>Estado</th>
+                    <th>Fecha emitida</th>
                     @if (esAdmin)
                     {
                         <th>Acciones</th>
@@ -164,6 +165,7 @@
                             <td data-label="Estado">
                                 <span class="@estadoClase">@estadoTexto</span>
                             </td>
+                            <td data-label="Fecha emitida">@item.FechaRegistro.ToString("dd/MM/yyyy")</td>
                             @if (esAdmin)
                             {
                                 <td data-label="Acciones" class="acciones">

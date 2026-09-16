@@ -3,8 +3,12 @@
     var tipoMensaje = TempData["Tipo"] as string ?? "info";
 
     var controladorActual = ViewContext.RouteData.Values["controller"]?.ToString();
+    var accionActual = ViewContext.RouteData.Values["action"]?.ToString();
     string Activo(string controlador) =>
         string.Equals(controladorActual, controlador, StringComparison.OrdinalIgnoreCase) ? "activo" : "";
+    string ActivoAccion(string controlador, string accion) =>
+        string.Equals(controladorActual, controlador, StringComparison.OrdinalIgnoreCase) &&
+        string.Equals(accionActual, accion, StringComparison.OrdinalIgnoreCase) ? "activo" : "";
 }
 <!DOCTYPE html>
 <html lang="es">
@@ -32,12 +36,20 @@
                 <nav class="sidebar-nav">
                     <p class="sidebar-section">Menú</p>
 
-                    <a asp-controller="Alimentos" asp-action="Index" class="sidebar-link @Activo("Alimentos")">
+                    <a asp-controller="Alimentos" asp-action="Index" class="sidebar-link @ActivoAccion("Alimentos", "Index")">
                         <i class="bi bi-grid-fill"></i> <span>Inventario</span>
+                    </a>
+
+                    <a asp-controller="Alimentos" asp-action="ProductosSeparados" class="sidebar-link @ActivoAccion("Alimentos", "ProductosSeparados")">
+                        <i class="bi bi-boxes"></i> <span>Productos Separados</span>
                     </a>
 
                     <a asp-controller="Pedidos" asp-action="Index" class="sidebar-link @Activo("Pedidos")">
                         <i class="bi bi-cart-plus-fill"></i> <span>Pedidos por realizar</span>
+                    </a>
+
+                    <a asp-controller="VisitasPrevias" asp-action="Index" class="sidebar-link @Activo("VisitasPrevias")">
+                        <i class="bi bi-clipboard-check"></i> <span>Revisión Previa</span>
                     </a>
 
                     <a asp-controller="EntregasProgramadas" asp-action="Index" class="sidebar-link @Activo("EntregasProgramadas")">
@@ -45,7 +57,7 @@
                     </a>
 
                     <a asp-controller="Entregas" asp-action="Index" class="sidebar-link @Activo("Entregas")">
-                        <i class="bi bi-geo-alt-fill"></i> <span>Lugares visitados</span>
+                        <i class="bi bi-gift-fill"></i> <span>Donaciones entregadas</span>
                     </a>
                 </nav>
 

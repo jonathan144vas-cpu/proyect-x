@@ -50,11 +50,66 @@ namespace ControlViveresApp.Controllers
             ViewBag.TotalRecaudado = totalRecaudado;
             ViewBag.PorcentajeMeta = _campania.PorcentajeDe(totalRecaudado);
 
+            // Los que están más próximos a vencer aparecen primero; los que no tienen
+            // fecha de vencimiento (no perecederos) quedan al final.
             var listaAlimentos = await consulta
-                .OrderByDescending(a => a.Id)
+                .OrderBy(a => a.FechaVencimiento == null ? 1 : 0)
+                .ThenBy(a => a.FechaVencimiento)
+                .ThenByDescending(a => a.Id)
                 .ToListAsync();
 
             return View(listaAlimentos);
+        }
+
+        // 1B. PRODUCTOS SEPARADOS: un cuadro por cada producto del inventario, con
+        // todos sus lotes ordenados ascendente por fecha de vencimiento. Se calcula
+        // en vivo desde el inventario, así que siempre queda sincronizado: un producto
+        // nuevo genera su propio cuadro automáticamente.
+        public async Task<IActionResult> ProductosSeparados()
+        {
+            var alimentos = await _contexto.Alimentos.AsNoTracking().ToListAsync();
+
+            var grupos = alimentos
+                .GroupBy(a => a.Nombre)
+                .Select(g => new ProductoSeparadoViewModel
+                {
+                    Nombre = g.Key,
+                    Lotes = g.OrderBy(a => a.FechaVencimiento == null ? 1 : 0)
+                             .ThenBy(a => a.FechaVencimiento)
+                             .ToList()
+                })
+                // Los productos con el lote más urgente (más próximo a vencer o ya vencido)
+                // aparecen primero; los que no tienen fecha de vencimiento van al final.
+                .OrderBy(g => g.Lotes.Min(a => a.FechaVencimiento) ?? DateOnly.MaxValue)
+                .ThenBy(g => g.Nombre)
+                .ToList();
+
+            return View(grupos);
+        }
+
+        // 1C. DETALLE DE UN PRODUCTO: todos sus lotes, sin filtrar por rango de días
+        public async Task<IActionResult> Detalle(string nombre)
+        {
+            if (string.IsNullOrWhiteSpace(nombre))
+            {
+                return NotFound();
+            }
+
+            var normalizado = nombre.Trim().ToLower();
+
+            var lotes = await _contexto.Alimentos.AsNoTracking()
+                .Where(a => a.Nombre.ToLower() == normalizado)
+                .OrderBy(a => a.FechaVencimiento == null ? 1 : 0)
+                .ThenBy(a => a.FechaVencimiento)
+                .ToListAsync();
+
+            if (lotes.Count == 0)
+            {
+                return NotFound();
+            }
+
+            ViewBag.Nombre = nombre;
+            return View(lotes);
         }
 
         // 2. CREAR (PANTALLA)

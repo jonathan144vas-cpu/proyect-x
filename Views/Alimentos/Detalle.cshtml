@@ -1,0 +1,80 @@
+@model IEnumerable<Alimento>
+
+@{
+    var nombre = ViewBag.Nombre as string ?? "";
+    ViewData["Title"] = $"Inventario de {nombre}";
+
+    var hoy = DateOnly.FromDateTime(DateTime.Now);
+}
+
+<div class="container-fluid">
+    <div class="header-panel">
+        <div>
+            <h2><i class="bi bi-basket"></i> Inventario de @nombre</h2>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
+                Todos los lotes registrados de este producto, ordenados por fecha de vencimiento
+            </p>
+        </div>
+
+        <a asp-action="ProductosSeparados" class="btn-cancelar">&larr; Volver a Productos Separados</a>
+    </div>
+
+    <div class="tabla-responsive">
+        <table class="tabla-viveres">
+            <thead>
+                <tr>
+                    <th>Categoría</th>
+                    <th>Cantidad</th>
+                    <th>Unidad</th>
+                    <th>Vencimiento</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    var estadoTexto = "Sin fecha";
+                    var estadoClase = "etiqueta etiqueta-gris";
+
+                    if (item.FechaVencimiento is DateOnly vencimiento)
+                    {
+                        var diasRestantes = vencimiento.DayNumber - hoy.DayNumber;
+
+                        if (diasRestantes < 0)
+                        {
+                            estadoTexto = "¡VENCIDO!";
+                            estadoClase = "etiqueta etiqueta-roja";
+                        }
+                        else if (diasRestantes == 0)
+                        {
+                            estadoTexto = "Vence hoy";
+                            estadoClase = "etiqueta etiqueta-ambar";
+                        }
+                        else if (diasRestantes <= 7)
+                        {
+                            estadoTexto = $"Vence en {diasRestantes} d";
+                            estadoClase = "etiqueta etiqueta-ambar";
+                        }
+                        else
+                        {
+                            estadoTexto = "Buen estado";
+                            estadoClase = "etiqueta etiqueta-verde";
+                        }
+                    }
+
+                    <tr>
+                        <td data-label="Categoría">@item.Categoria</td>
+                        <td data-label="Cantidad">@item.Cantidad</td>
+                        <td data-label="Unidad">@item.UnidadMedida</td>
+                        <td data-label="Vencimiento">
+                            @(item.FechaVencimiento?.ToString("dd/MM/yyyy") ?? "N/A")
+                        </td>
+                        <td data-label="Estado">
+                            <span class="@estadoClase">@estadoTexto</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

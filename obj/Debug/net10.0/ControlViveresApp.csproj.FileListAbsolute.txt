@@ -113,7 +113,6 @@ C:\Users\jonat\ControlViveres\ControlViveresApp\obj\Debug\net10.0\rjsmcshtml.dsw
 C:\Users\jonat\ControlViveres\ControlViveresApp\obj\Debug\net10.0\scopedcss\Views\Shared\_Layout.cshtml.rz.scp.css
 C:\Users\jonat\ControlViveres\ControlViveresApp\obj\Debug\net10.0\scopedcss\bundle\ControlViveresApp.styles.css
 C:\Users\jonat\ControlViveres\ControlViveresApp\obj\Debug\net10.0\scopedcss\projectbundle\ControlViveresApp.bundle.scp.css
-C:\Users\jonat\ControlViveres\ControlViveresApp\obj\Debug\net10.0\compressed\midj3yh2n1-{0}-le2zj45bt0-le2zj45bt0.gz
 C:\Users\jonat\ControlViveres\ControlViveresApp\obj\Debug\net10.0\compressed\4811516f6m-{0}-61n19gt1b8-61n19gt1b8.gz
 C:\Users\jonat\ControlViveres\ControlViveresApp\obj\Debug\net10.0\compressed\6huzb7madn-{0}-bgpkfe5zud-bgpkfe5zud.gz
 C:\Users\jonat\ControlViveres\ControlViveresApp\obj\Debug\net10.0\compressed\prz8pz3ag4-{0}-bqjiyaj88i-bqjiyaj88i.gz
@@ -224,3 +223,4 @@ C:\Users\jonat\ControlViveres\ControlViveresApp\bin\Debug\net10.0\runtimes\win-x
 C:\Users\jonat\ControlViveres\ControlViveresApp\bin\Debug\net10.0\runtimes\win-x64\native\qpdf.dll
 C:\Users\jonat\ControlViveres\ControlViveresApp\bin\Debug\net10.0\runtimes\win-x86\native\QuestPdfSkia.dll
 C:\Users\jonat\ControlViveres\ControlViveresApp\bin\Debug\net10.0\runtimes\win-x86\native\qpdf.dll
+C:\Users\jonat\ControlViveres\ControlViveresApp\obj\Debug\net10.0\compressed\midj3yh2n1-{0}-higfshilly-higfshilly.gz

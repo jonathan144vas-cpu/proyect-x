@@ -11,8 +11,8 @@
     var solicitados = Model.Count(p => p.Estado == EstadoPedido.Solicitado);
     var recibidos = Model.Count(p => p.Estado == EstadoPedido.Recibido);
 
-    // Columnas: Artículo, Categoría, Cantidad, Prioridad, Se necesita, Estado (+ Acciones)
-    var totalColumnas = esAdmin ? 7 : 6;
+    // Columnas: Artículo, Categoría, Cantidad, Prioridad, Se necesita, Estado, Fecha emitida (+ Acciones)
+    var totalColumnas = esAdmin ? 8 : 7;
 
     string ClaseEstado(EstadoPedido estado) => estado switch
     {
@@ -79,6 +79,7 @@
                     <th>Prioridad</th>
                     <th>Se necesita</th>
                     <th>Estado</th>
+                    <th>Fecha emitida</th>
                     @if (esAdmin)
                     {
                         <th>Acciones</th>
@@ -117,6 +118,7 @@
                             <td data-label="Estado">
                                 <span class="@ClaseEstado(item.Estado)">@item.Estado</span>
                             </td>
+                            <td data-label="Fecha emitida">@item.FechaSolicitud.ToString("dd/MM/yyyy")</td>
                             @if (esAdmin)
                             {
                                 <td data-label="Acciones" class="acciones">

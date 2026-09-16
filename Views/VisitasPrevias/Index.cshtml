@@ -1,22 +1,22 @@
-@model IEnumerable<EntregaProgramada>
+@model IEnumerable<VisitaPrevia>
 
 @{
-    ViewData["Title"] = "Entregas Programadas";
+    ViewData["Title"] = "Revisión Previa";
 
     var esAdmin = User.IsInRole("Admin");
     var buscarActual = ViewBag.Buscar as string;
     var departamentoActual = ViewBag.Departamento as string;
-    var estadoActual = ViewBag.Estado as EstadoEntregaProgramada?;
+    var estadoActual = ViewBag.Estado as EstadoVisitaPrevia?;
 
-    var totalProgramadas = (int)(ViewBag.TotalProgramadas ?? 0);
-    var totalCompletadas = (int)(ViewBag.TotalCompletadas ?? 0);
+    var totalPendientes = (int)(ViewBag.TotalPendientes ?? 0);
+    var totalAprobadas = (int)(ViewBag.TotalAprobadas ?? 0);
 
-    var totalColumnas = esAdmin ? 7 : 6;
+    var totalColumnas = esAdmin ? 8 : 7;
 
-    string ClaseEstado(EstadoEntregaProgramada estado) => estado switch
+    string ClaseEstado(EstadoVisitaPrevia estado) => estado switch
     {
-        EstadoEntregaProgramada.Programada => "etiqueta etiqueta-ambar",
-        EstadoEntregaProgramada.Completada => "etiqueta etiqueta-verde",
+        EstadoVisitaPrevia.Pendiente => "etiqueta etiqueta-ambar",
+        EstadoVisitaPrevia.Aprobada => "etiqueta etiqueta-verde",
         _ => "etiqueta etiqueta-gris"
     };
 }
@@ -24,26 +24,26 @@
 <div class="container-fluid">
     <div class="header-panel">
         <div>
-            <h2><i class="bi bi-truck"></i> Entregas Programadas</h2>
+            <h2><i class="bi bi-clipboard-check"></i> Revisión Previa</h2>
             <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
-                Entregas planeadas hacia lugares por visitar
+                Visitas propuestas, pendientes de aprobar antes de programarlas
             </p>
         </div>
 
         @if (esAdmin)
         {
-            <a asp-action="Crear" class="btn-nuevo">+ Nueva Entrega Programada</a>
+            <a asp-action="Crear" class="btn-nuevo">+ Agregar visita</a>
         }
     </div>
 
     <div class="tarjetas-resumen">
         <div class="tarjeta">
-            <div class="tarjeta-etiqueta">Programadas</div>
-            <div class="tarjeta-valor" style="color: #fbbf24;">@totalProgramadas</div>
+            <div class="tarjeta-etiqueta">Pendientes</div>
+            <div class="tarjeta-valor" style="color: #fbbf24;">@totalPendientes</div>
         </div>
         <div class="tarjeta">
-            <div class="tarjeta-etiqueta">Completadas</div>
-            <div class="tarjeta-valor" style="color: #4ade80;">@totalCompletadas</div>
+            <div class="tarjeta-etiqueta">Aprobadas</div>
+            <div class="tarjeta-valor" style="color: #4ade80;">@totalAprobadas</div>
         </div>
     </div>
 
@@ -52,7 +52,7 @@
         <select name="departamento" asp-items="@(new SelectList(Catalogos.NombresDepartamentos, departamentoActual))">
             <option value="">Todos los departamentos</option>
         </select>
-        <select name="estado" asp-items="@(new SelectList(Html.GetEnumSelectList<EstadoEntregaProgramada>(), "Value", "Text", ((int?)estadoActual)?.ToString()))">
+        <select name="estado" asp-items="@(new SelectList(Html.GetEnumSelectList<EstadoVisitaPrevia>(), "Value", "Text", ((int?)estadoActual)?.ToString()))">
             <option value="">Todos los estados</option>
         </select>
         <button type="submit">Filtrar</button>
@@ -64,10 +64,11 @@
                 <tr>
                     <th>Lugar</th>
                     <th>Departamento / Municipio</th>
-                    <th>Fecha programada</th>
-                    <th>Fecha de entrega</th>
+                    <th>Fecha propuesta</th>
                     <th>Familias</th>
                     <th>Estado</th>
+                    <th>Fecha emitida</th>
+                    <th>Productos</th>
                     @if (esAdmin)
                     {
                         <th>Acciones</th>
@@ -79,7 +80,7 @@
                 {
                     <tr>
                         <td colspan="@totalColumnas" style="text-align: center; color: #94a3b8; padding: 2rem;">
-                            No hay entregas programadas que coincidan con la búsqueda.
+                            No hay visitas previas que coincidan con la búsqueda.
                         </td>
                     </tr>
                 }
@@ -90,42 +91,40 @@
                         <tr>
                             <td data-label="Lugar"><strong>@item.Lugar</strong></td>
                             <td data-label="Departamento / Municipio">@item.Municipio, @item.Departamento</td>
-                            <td data-label="Fecha programada">@item.FechaProgramada.ToString("dd/MM/yyyy")</td>
-                            <td data-label="Fecha de entrega">
-                                @(item.FechaCompletada?.ToString("dd/MM/yyyy") ?? "—")
-                            </td>
+                            <td data-label="Fecha propuesta">@item.FechaPropuesta.ToString("dd/MM/yyyy")</td>
                             <td data-label="Familias">@item.FamiliasBeneficiadas</td>
                             <td data-label="Estado">
                                 <span class="@ClaseEstado(item.Estado)">@item.Estado</span>
                             </td>
+                            <td data-label="Fecha emitida">@item.FechaRegistro.ToString("dd/MM/yyyy")</td>
+                            <td data-label="Productos">
+                                <button type="button" class="btn-editar js-ver-productos" title="Ver productos que se necesitan"
+                                        data-lugar="@item.Lugar"
+                                        data-productos="@System.Text.Json.JsonSerializer.Serialize(item.Detalles.Select(d => new { d.Producto, d.SistemaMedida, d.Total }))">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </td>
                             @if (esAdmin)
                             {
                                 <td data-label="Acciones" class="acciones">
-                                    @if (item.Estado == EstadoEntregaProgramada.Programada)
+                                    @if (item.Estado == EstadoVisitaPrevia.Pendiente)
                                     {
-                                        <form asp-action="Completar" asp-route-id="@item.Id" method="post" style="display:inline;">
-                                            <button type="button" class="btn-recibir js-completar" data-lugar="@item.Lugar">
-                                                Completar
+                                        <form asp-action="Aprobar" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                            <button type="button" class="btn-recibir js-aprobar" data-lugar="@item.Lugar">
+                                                Programar entrega
                                             </button>
                                         </form>
 
                                         <a asp-action="Editar" asp-route-id="@item.Id" class="btn-editar">Editar</a>
 
-                                        <form asp-action="Cancelar" asp-route-id="@item.Id" method="post" style="display:inline;">
-                                            <button type="button" class="btn-advertencia js-cancelar" data-lugar="@item.Lugar">
-                                                Cancelar
+                                        <form asp-action="Rechazar" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                            <button type="button" class="btn-eliminar js-rechazar" data-lugar="@item.Lugar">
+                                                Rechazar
                                             </button>
                                         </form>
                                     }
 
-                                    @if (item.Estado == EstadoEntregaProgramada.Completada)
-                                    {
-                                        <a asp-action="Comprobante" asp-route-id="@item.Id" class="btn-editar" target="_blank">
-                                            Comprobante
-                                        </a>
-                                    }
-
-                                    @if (item.Estado != EstadoEntregaProgramada.Completada)
+                                    @if (item.Estado != EstadoVisitaPrevia.Aprobada)
                                     {
                                         <form asp-action="Eliminar" asp-route-id="@item.Id" method="post" style="display:inline;">
                                             <button type="button" class="btn-eliminar js-eliminar" data-nombre="@item.Lugar">
@@ -145,16 +144,6 @@
 
 @section Scripts {
     <script>
-        @{
-            var idComprobanteEntrega = TempData["ComprobanteEntregaId"] as int?;
-        }
-        @if (idComprobanteEntrega is not null)
-        {
-            <text>
-            window.open('@Url.Action("Comprobante", new { id = idComprobanteEntrega })', '_blank');
-            </text>
-        }
-
         function confirmar(boton, opciones) {
             var formulario = boton.closest('form');
 
@@ -171,26 +160,49 @@
             });
         }
 
-        document.querySelectorAll('.js-completar').forEach(function (boton) {
+        document.querySelectorAll('.js-aprobar').forEach(function (boton) {
             boton.addEventListener('click', function () {
                 confirmar(boton, {
-                    title: '¿Completar entrega?',
-                    text: 'Se descontará del inventario, se registrará en el historial y se generará el comprobante de "' + boton.dataset.lugar + '".',
+                    title: '¿Programar esta entrega?',
+                    text: 'Se creará una Entrega Programada para "' + boton.dataset.lugar + '" con los productos propuestos.',
                     icon: 'question',
                     confirmButtonColor: '#10b981',
-                    confirmButtonText: 'Sí, completar'
+                    confirmButtonText: 'Sí, programar'
                 });
             });
         });
 
-        document.querySelectorAll('.js-cancelar').forEach(function (boton) {
+        document.querySelectorAll('.js-ver-productos').forEach(function (boton) {
+            boton.addEventListener('click', function () {
+                var productos = JSON.parse(boton.dataset.productos || '[]');
+
+                var filas = productos.length === 0
+                    ? '<p style="color:#94a3b8;">No se registraron productos.</p>'
+                    : '<ul style="text-align:left; margin:0; padding-left:1.1rem;">' +
+                        productos.map(function (p) {
+                            return '<li>' + p.Producto + ' &mdash; ' + p.Total + ' ' + p.SistemaMedida + '</li>';
+                        }).join('') +
+                      '</ul>';
+
+                Swal.fire({
+                    title: 'Productos propuestos para ' + boton.dataset.lugar,
+                    html: filas,
+                    background: '#1e293b',
+                    color: '#f8fafc',
+                    confirmButtonColor: '#3b82f6',
+                    confirmButtonText: 'Cerrar'
+                });
+            });
+        });
+
+        document.querySelectorAll('.js-rechazar').forEach(function (boton) {
             boton.addEventListener('click', function () {
                 confirmar(boton, {
-                    title: '¿Cancelar entrega?',
-                    text: 'Se cancelará la entrega programada a "' + boton.dataset.lugar + '".',
+                    title: '¿Rechazar visita?',
+                    text: 'Se rechazará la visita propuesta a "' + boton.dataset.lugar + '".',
                     icon: 'warning',
                     confirmButtonColor: '#ef4444',
-                    confirmButtonText: 'Sí, cancelar'
+                    confirmButtonText: 'Sí, rechazar'
                 });
             });
         });
@@ -198,8 +210,8 @@
         document.querySelectorAll('.js-eliminar').forEach(function (boton) {
             boton.addEventListener('click', function () {
                 confirmar(boton, {
-                    title: '¿Eliminar entrega programada?',
-                    text: 'Estás a punto de eliminar la entrega a "' + boton.dataset.nombre + '".',
+                    title: '¿Eliminar visita previa?',
+                    text: 'Estás a punto de eliminar la visita a "' + boton.dataset.nombre + '".',
                     icon: 'warning',
                     confirmButtonColor: '#ef4444',
                     confirmButtonText: 'Sí, eliminar'

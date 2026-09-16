@@ -35,12 +35,20 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWxpbWVudG9zXENyZWFyLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Alimentos/Detalle.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWxpbWVudG9zXERldGFsbGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Alimentos/Editar.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWxpbWVudG9zXEVkaXRhci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Alimentos/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWxpbWVudG9zXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Alimentos/ProductosSeparados.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWxpbWVudG9zXFByb2R1Y3Rvc1NlcGFyYWRvcy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/jonat/ControlViveres/ControlViveresApp/Views/cuentas/AccesoDenegado.cshtml]
@@ -101,6 +109,22 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/jonat/ControlViveres/ControlViveresApp/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/VisitasPrevias/Crear.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVmlzaXRhc1ByZXZpYXNcQ3JlYXIuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/VisitasPrevias/Editar.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVmlzaXRhc1ByZXZpYXNcRWRpdGFyLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/VisitasPrevias/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVmlzaXRhc1ByZXZpYXNcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/jonat/ControlViveres/ControlViveresApp/Views/VisitasPrevias/_FormularioVisitaPrevia.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVmlzaXRhc1ByZXZpYXNcX0Zvcm11bGFyaW9WaXNpdGFQcmV2aWEuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/jonat/ControlViveres/ControlViveresApp/Views/_ViewImports.cshtml]

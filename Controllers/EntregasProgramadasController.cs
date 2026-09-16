@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ControlViveresApp.Data;
@@ -58,11 +59,25 @@ namespace ControlViveresApp.Controllers
             ViewBag.TotalCompletadas = await _contexto.EntregasProgramadas
                 .CountAsync(e => e.Estado == EstadoEntregaProgramada.Completada);
 
-            var lista = await consulta
-                .OrderBy(e => e.Estado == EstadoEntregaProgramada.Programada ? 0 : 1)
-                .ThenBy(e => e.FechaProgramada)
+            var lista = await consulta.ToListAsync();
+
+            // Orden pensado para operar el día a día: primero lo programado (lo más
+            // próximo a entregarse primero), luego lo ya completado (lo más reciente
+            // primero, para ver de inmediato la última entrega real) y al final lo
+            // cancelado. Se ordena en memoria porque mezcla FechaProgramada (DateOnly)
+            // y FechaCompletada (DateTime), que no conviene combinar en una sola
+            // consulta SQL.
+            lista = lista
+                .OrderBy(e => e.Estado switch
+                {
+                    EstadoEntregaProgramada.Programada => 0,
+                    EstadoEntregaProgramada.Completada => 1,
+                    _ => 2
+                })
+                .ThenBy(e => e.Estado == EstadoEntregaProgramada.Programada ? e.FechaProgramada : DateOnly.MaxValue)
+                .ThenByDescending(e => e.FechaCompletada ?? DateTime.MinValue)
                 .ThenByDescending(e => e.Id)
-                .ToListAsync();
+                .ToList();
 
             return View(lista);
         }
@@ -204,17 +219,49 @@ namespace ControlViveresApp.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            // Descuento FIFO: por cada producto solicitado se consume primero el lote
+            // que vence más pronto, y se salta cualquier lote ya vencido para no
+            // enviar producto caducado (esto cubre también el caso de una entrega que
+            // se completa tarde y el lote que le tocaba ya expiró para entonces).
+            var hoy = DateOnly.FromDateTime(DateTime.Now);
+            var avisos = new List<string>();
+
             foreach (var detalle in entrega.Detalles)
             {
                 var nombreNormalizado = detalle.Producto.Trim().ToLower();
+                var restante = detalle.Total;
 
-                var alimento = await _contexto.Alimentos.FirstOrDefaultAsync(a =>
-                    a.Nombre.ToLower() == nombreNormalizado &&
-                    a.UnidadMedida == detalle.SistemaMedida);
+                var lotes = await _contexto.Alimentos
+                    .Where(a => a.Nombre.ToLower() == nombreNormalizado && a.UnidadMedida == detalle.SistemaMedida)
+                    .OrderBy(a => a.FechaVencimiento == null ? 1 : 0)
+                    .ThenBy(a => a.FechaVencimiento)
+                    .ToListAsync();
 
-                if (alimento is not null)
+                var lotesVencidosSaltados = 0;
+
+                foreach (var lote in lotes)
                 {
-                    alimento.Cantidad = Math.Max(0, alimento.Cantidad - (int)detalle.Total);
+                    if (restante <= 0) break;
+
+                    if (lote.FechaVencimiento is DateOnly vencimiento && vencimiento < hoy)
+                    {
+                        lotesVencidosSaltados++;
+                        continue;
+                    }
+
+                    var aDescontar = Math.Min(lote.Cantidad, (int)restante);
+                    lote.Cantidad -= aDescontar;
+                    restante -= aDescontar;
+                }
+
+                if (lotesVencidosSaltados > 0)
+                {
+                    avisos.Add($"{detalle.Producto}: se omitieron {lotesVencidosSaltados} lote(s) vencido(s).");
+                }
+
+                if (restante > 0)
+                {
+                    avisos.Add($"{detalle.Producto}: faltaron {restante} {detalle.SistemaMedida} (inventario insuficiente).");
                 }
             }
 
@@ -231,13 +278,22 @@ namespace ControlViveresApp.Controllers
                 TotalEntregado = (int)entrega.Detalles.Sum(d => d.Total),
                 Observaciones = entrega.Observaciones,
                 RegistradoPor = User.Identity?.Name,
-                FechaRegistro = DateTime.UtcNow
+                FechaRegistro = DateTime.UtcNow,
+                EntregaProgramadaId = entrega.Id,
+                Detalles = entrega.Detalles.Select(d => new DetalleEntrega
+                {
+                    Producto = d.Producto,
+                    SistemaMedida = d.SistemaMedida,
+                    Total = d.Total
+                }).ToList()
             });
 
             await _contexto.SaveChangesAsync();
 
-            TempData["Mensaje"] = $"Entrega a {entrega.Lugar} completada. Se descontó del inventario y quedó en el historial.";
-            TempData["Tipo"] = "success";
+            TempData["Mensaje"] = avisos.Count == 0
+                ? $"Entrega a {entrega.Lugar} completada. Se descontó del inventario y quedó en el historial."
+                : $"Entrega a {entrega.Lugar} completada con observaciones: {string.Join(" ", avisos)}";
+            TempData["Tipo"] = avisos.Count == 0 ? "success" : "warning";
             TempData["ComprobanteEntregaId"] = entrega.Id;
 
             return RedirectToAction(nameof(Index));

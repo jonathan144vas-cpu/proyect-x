@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace ControlViveresApp.Models
@@ -58,5 +59,13 @@ namespace ControlViveresApp.Models
 
         [Display(Name = "Fecha de registro")]
         public DateTime FechaRegistro { get; set; }
+
+        // Referencia a la entrega programada que originó esta donación, para poder
+        // reutilizar su comprobante en PDF sin generarlo de nuevo.
+        [Display(Name = "Entrega programada de origen")]
+        public int? EntregaProgramadaId { get; set; }
+        public EntregaProgramada? EntregaProgramadaOrigen { get; set; }
+
+        public List<DetalleEntrega> Detalles { get; set; } = [];
     }
 }

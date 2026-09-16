@@ -26,6 +26,12 @@ namespace ControlViveresApp.Data
 
         public DbSet<DetalleEntregaProgramada> DetallesEntregaProgramada => Set<DetalleEntregaProgramada>();
 
+        public DbSet<DetalleEntrega> DetallesEntrega => Set<DetalleEntrega>();
+
+        public DbSet<VisitaPrevia> VisitasPrevias => Set<VisitaPrevia>();
+
+        public DbSet<DetalleVisitaPrevia> DetallesVisitaPrevia => Set<DetalleVisitaPrevia>();
+
         protected override void OnModelCreating(ModelBuilder constructor)
         {
             base.OnModelCreating(constructor);
@@ -62,6 +68,16 @@ namespace ControlViveresApp.Data
             {
                 entrega.HasIndex(e => e.Departamento);
                 entrega.HasIndex(e => e.FechaEntrega);
+
+                entrega.HasMany(e => e.Detalles)
+                    .WithOne(d => d.Entrega)
+                    .HasForeignKey(d => d.EntregaId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entrega.HasOne(e => e.EntregaProgramadaOrigen)
+                    .WithMany()
+                    .HasForeignKey(e => e.EntregaProgramadaId)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
 
             constructor.Entity<EntregaProgramada>(entregaProgramada =>
@@ -74,6 +90,19 @@ namespace ControlViveresApp.Data
                 entregaProgramada.HasMany(e => e.Detalles)
                     .WithOne(d => d.EntregaProgramada)
                     .HasForeignKey(d => d.EntregaProgramadaId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            constructor.Entity<VisitaPrevia>(visita =>
+            {
+                visita.Property(v => v.Estado).HasConversion<string>().HasMaxLength(20);
+
+                visita.HasIndex(v => v.Departamento);
+                visita.HasIndex(v => v.Estado);
+
+                visita.HasMany(v => v.Detalles)
+                    .WithOne(d => d.VisitaPrevia)
+                    .HasForeignKey(d => d.VisitaPreviaId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
         }

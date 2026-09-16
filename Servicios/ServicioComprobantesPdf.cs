@@ -35,6 +35,7 @@ namespace ControlViveresApp.Servicios
                         columna.Spacing(6);
 
                         columna.Item().Text($"Fecha y hora de recepción: {DateTime.Now:dd/MM/yyyy HH:mm}");
+                        columna.Item().Text($"Fecha emitida (registro del pedido): {pedido.FechaSolicitud:dd/MM/yyyy HH:mm}");
                         columna.Item().Text($"Pedido No.: {pedido.Id}");
                         columna.Item().Text($"Solicitado por: {pedido.SolicitadoPor ?? "N/A"}");
                         if (!string.IsNullOrWhiteSpace(pedido.Proveedor))
@@ -112,6 +113,7 @@ namespace ControlViveresApp.Servicios
                         columna.Spacing(6);
 
                         columna.Item().Text($"Fecha de entrega: {(entrega.FechaCompletada ?? DateTime.Now):dd/MM/yyyy HH:mm}");
+                        columna.Item().Text($"Fecha emitida (registro de la entrega programada): {entrega.FechaRegistro:dd/MM/yyyy HH:mm}");
                         columna.Item().Text($"Lugar: {entrega.Lugar}");
                         columna.Item().Text($"Municipio, Departamento: {entrega.Municipio}, {entrega.Departamento}");
                         columna.Item().Text($"Familias beneficiadas: {entrega.FamiliasBeneficiadas}");

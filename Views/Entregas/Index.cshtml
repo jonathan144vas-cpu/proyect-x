@@ -1,7 +1,7 @@
 @model IEnumerable<Entrega>
 
 @{
-    ViewData["Title"] = "Lugares Visitados";
+    ViewData["Title"] = "Donaciones Entregadas";
 
     var buscarActual = ViewBag.Buscar as string;
     var departamentoActual = ViewBag.Departamento as string;
@@ -13,14 +13,14 @@
     var totalEntregado = (int)(ViewBag.TotalEntregado ?? 0);
     var totalDepartamentos = (int)(ViewBag.TotalDepartamentos ?? 0);
 
-    // Columnas: Lugar, Departamento, Fecha, Familias, Entregado
-    var totalColumnas = 5;
+    // Columnas: Lugar, Departamento, Fecha, Familias, Entregado, Productos, Comprobante
+    var totalColumnas = 7;
 }
 
 <div class="container-fluid">
     <div class="header-panel">
         <div>
-            <h2><i class="bi bi-geo-alt-fill"></i> Lugares Visitados</h2>
+            <h2><i class="bi bi-gift-fill"></i> Donaciones Entregadas</h2>
             <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
                 Historial de comunidades de Guatemala donde ya se entregaron víveres (solo lectura)
             </p>
@@ -63,6 +63,8 @@
                     <th>Fecha</th>
                     <th>Familias</th>
                     <th>Entregado</th>
+                    <th>Productos entregados</th>
+                    <th>Comprobante</th>
                 </tr>
             </thead>
             <tbody>
@@ -90,6 +92,28 @@
                             <td data-label="Fecha">@item.FechaEntrega.ToString("dd/MM/yyyy")</td>
                             <td data-label="Familias">@item.FamiliasBeneficiadas</td>
                             <td data-label="Entregado">@item.TotalEntregado</td>
+                            <td data-label="Productos entregados">
+                                @if (item.Detalles.Count == 0)
+                                {
+                                    <span style="color: #64748b;">Sin detalle</span>
+                                }
+                                else
+                                {
+                                    <span>@string.Join(", ", item.Detalles.Select(d => $"{d.Producto} ({d.Total} {d.SistemaMedida})"))</span>
+                                }
+                            </td>
+                            <td data-label="Comprobante">
+                                @if (item.EntregaProgramadaId is not null)
+                                {
+                                    <a asp-controller="EntregasProgramadas" asp-action="Comprobante" asp-route-id="@item.EntregaProgramadaId" class="btn-editar" target="_blank">
+                                        PDF
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span style="color: #64748b;">N/A</span>
+                                }
+                            </td>
                         </tr>
                     }
                 }

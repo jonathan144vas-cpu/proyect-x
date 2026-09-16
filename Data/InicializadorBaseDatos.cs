@@ -63,6 +63,8 @@ namespace ControlViveresApp.Data
             await SembrarAlimentosAsync(contexto, registrador);
             await SembrarPedidosAsync(contexto, registrador);
             await SembrarEntregasAsync(contexto, registrador);
+            await SembrarEntregasProgramadasAsync(contexto, registrador);
+            await SembrarVisitasPreviasAsync(contexto, registrador);
         }
 
         private static async Task CrearUsuarioAsync(
@@ -261,8 +263,86 @@ namespace ControlViveresApp.Data
 
         private const int MetaEntregasSembradas = 50;
 
+        /// <summary>
+        /// Siembra el historial de "Donaciones entregadas". Como son entregas que ya
+        /// pasaron y los víveres ya no están en bodega, cada una lleva su propia Entrega
+        /// Programada "Completada" con productos supuestos (no hace falta que existan
+        /// en el inventario actual): eso le da a cada fila su detalle de productos y su
+        /// comprobante en PDF, igual que a las entregas completadas desde la aplicación.
+        /// </summary>
+        // Postgres exige Kind=Utc para "timestamp with time zone"; DateOnly.ToDateTime
+        // siempre da Kind=Unspecified, así que hay que forzarlo antes de guardar.
+        private static DateTime AFechaUtc(DateOnly fecha) =>
+            DateTime.SpecifyKind(fecha.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+
+        /// <summary>Entre 1 y 3 productos distintos, con cantidades de ejemplo.</summary>
+        private static List<(string Producto, string Unidad, int Total)> GenerarProductosSupuestos()
+        {
+            var cantidadProductos = Aleatorio.Next(1, 4);
+
+            return Enumerable.Range(0, cantidadProductos)
+                .Select(_ => Productos[Aleatorio.Next(Productos.Length)])
+                .GroupBy(p => p.Nombre)
+                .Select(g => g.First())
+                .Select(producto => (producto.Nombre, producto.Unidad, Aleatorio.Next(20, 300)))
+                .ToList();
+        }
+
         private static async Task SembrarEntregasAsync(ContextoViveres contexto, ILogger registrador)
         {
+            // Backfill: registros históricos sembrados antes de que "Donaciones entregadas"
+            // guardara detalle de productos y comprobante en PDF. Se completan con productos
+            // supuestos (ya no están en bodega, así que no hace falta que existan en el
+            // inventario actual) para que todas las filas terminen con su PDF.
+            var sinDetalle = await contexto.Entregas
+                .Where(e => e.EntregaProgramadaId == null)
+                .ToListAsync();
+
+            if (sinDetalle.Count > 0)
+            {
+                var programadasBackfill = new List<EntregaProgramada>();
+
+                foreach (var entrega in sinDetalle)
+                {
+                    var productos = GenerarProductosSupuestos();
+
+                    var entregaProgramada = new EntregaProgramada
+                    {
+                        Lugar = entrega.Lugar,
+                        Departamento = entrega.Departamento,
+                        Municipio = entrega.Municipio ?? string.Empty,
+                        FechaProgramada = entrega.FechaEntrega,
+                        FamiliasBeneficiadas = entrega.FamiliasBeneficiadas,
+                        Estado = EstadoEntregaProgramada.Completada,
+                        RegistradoPor = entrega.RegistradoPor,
+                        FechaRegistro = entrega.FechaRegistro,
+                        FechaCompletada = AFechaUtc(entrega.FechaEntrega),
+                        Detalles = productos.Select(p => new DetalleEntregaProgramada
+                        {
+                            Producto = p.Producto,
+                            SistemaMedida = p.Unidad,
+                            Total = p.Total
+                        }).ToList()
+                    };
+                    programadasBackfill.Add(entregaProgramada);
+
+                    entrega.EntregaProgramadaOrigen = entregaProgramada;
+                    entrega.TotalEntregado = productos.Sum(p => p.Total);
+                    entrega.Detalles = productos.Select(p => new DetalleEntrega
+                    {
+                        Producto = p.Producto,
+                        SistemaMedida = p.Unidad,
+                        Total = p.Total
+                    }).ToList();
+                }
+
+                contexto.EntregasProgramadas.AddRange(programadasBackfill);
+                await contexto.SaveChangesAsync();
+
+                registrador.LogInformation(
+                    "Se completó el detalle y comprobante de {Cantidad} donaciones entregadas antiguas.", sinDetalle.Count);
+            }
+
             var existentes = await contexto.Entregas.CountAsync();
             var faltantes = MetaEntregasSembradas - existentes;
 
@@ -277,6 +357,7 @@ namespace ControlViveresApp.Data
                 .SelectMany(par => par.Value.Select(municipio => (Departamento: par.Key, Municipio: municipio)))
                 .ToArray();
 
+            var entregasProgramadas = new List<EntregaProgramada>();
             var entregas = new List<Entrega>();
 
             for (var i = 0; i < faltantes; i++)
@@ -284,23 +365,166 @@ namespace ControlViveresApp.Data
                 var (departamento, municipio) = municipiosConDepartamento[
                     (int)((long)i * municipiosConDepartamento.Length / faltantes) % municipiosConDepartamento.Length];
 
-                entregas.Add(new Entrega
+                var fechaEntrega = DateOnly.FromDateTime(DateTime.Now.AddDays(-Aleatorio.Next(1, 365)));
+                var familias = Aleatorio.Next(15, 160);
+                var productos = GenerarProductosSupuestos();
+
+                var entregaProgramada = new EntregaProgramada
                 {
                     Lugar = $"Comunidad {municipio}",
                     Departamento = departamento,
                     Municipio = municipio,
-                    FechaEntrega = DateOnly.FromDateTime(DateTime.Now.AddDays(-Aleatorio.Next(1, 365))),
-                    FamiliasBeneficiadas = Aleatorio.Next(15, 160),
-                    TotalEntregado = Aleatorio.Next(200, 2200),
+                    FechaProgramada = fechaEntrega,
+                    FamiliasBeneficiadas = familias,
+                    Estado = EstadoEntregaProgramada.Completada,
                     RegistradoPor = "admin",
-                    FechaRegistro = DateTime.UtcNow.AddDays(-Aleatorio.Next(1, 365))
+                    FechaRegistro = AFechaUtc(fechaEntrega).AddDays(-Aleatorio.Next(1, 10)),
+                    FechaCompletada = AFechaUtc(fechaEntrega),
+                    Detalles = productos.Select(p => new DetalleEntregaProgramada
+                    {
+                        Producto = p.Producto,
+                        SistemaMedida = p.Unidad,
+                        Total = p.Total
+                    }).ToList()
+                };
+                entregasProgramadas.Add(entregaProgramada);
+
+                entregas.Add(new Entrega
+                {
+                    Lugar = entregaProgramada.Lugar,
+                    Departamento = departamento,
+                    Municipio = municipio,
+                    FechaEntrega = fechaEntrega,
+                    FamiliasBeneficiadas = familias,
+                    TotalEntregado = productos.Sum(p => p.Total),
+                    RegistradoPor = "admin",
+                    FechaRegistro = entregaProgramada.FechaRegistro,
+                    // La navegación (en vez del Id) deja que EF asigne la FK solo al
+                    // guardar, ya que la EntregaProgramada todavía no tiene Id aquí.
+                    EntregaProgramadaOrigen = entregaProgramada,
+                    Detalles = productos.Select(p => new DetalleEntrega
+                    {
+                        Producto = p.Producto,
+                        SistemaMedida = p.Unidad,
+                        Total = p.Total
+                    }).ToList()
                 });
             }
 
+            contexto.EntregasProgramadas.AddRange(entregasProgramadas);
             contexto.Entregas.AddRange(entregas);
             await contexto.SaveChangesAsync();
 
-            registrador.LogInformation("Se sembraron {Cantidad} lugares visitados en el historial.", entregas.Count);
+            registrador.LogInformation("Se sembraron {Cantidad} donaciones entregadas en el historial.", entregas.Count);
+        }
+
+        private const int MetaEntregasProgramadasSembradas = 50;
+
+        private static async Task SembrarEntregasProgramadasAsync(ContextoViveres contexto, ILogger registrador)
+        {
+            // Solo se cuentan las que siguen "Programada": las completadas del historial
+            // de donaciones (ver SembrarEntregasAsync) son otra cosa y no deben contar
+            // para la meta de entregas por realizar.
+            var existentes = await contexto.EntregasProgramadas
+                .CountAsync(e => e.Estado == EstadoEntregaProgramada.Programada);
+            var faltantes = MetaEntregasProgramadasSembradas - existentes;
+
+            if (faltantes <= 0)
+            {
+                return;
+            }
+
+            // Se recorren los municipios de todos los departamentos para que los destinos
+            // queden repartidos entre distintos municipios y departamentos de Guatemala.
+            var municipiosConDepartamento = Catalogos.MunicipiosPorDepartamento
+                .SelectMany(par => par.Value.Select(municipio => (Departamento: par.Key, Municipio: municipio)))
+                .ToArray();
+
+            var entregasProgramadas = new List<EntregaProgramada>();
+
+            for (var i = 0; i < faltantes; i++)
+            {
+                var (departamento, municipio) = municipiosConDepartamento[
+                    (int)((long)i * municipiosConDepartamento.Length / faltantes) % municipiosConDepartamento.Length];
+
+                var productos = GenerarProductosSupuestos();
+
+                entregasProgramadas.Add(new EntregaProgramada
+                {
+                    Lugar = $"Comunidad {municipio}",
+                    Departamento = departamento,
+                    Municipio = municipio,
+                    FechaProgramada = DateOnly.FromDateTime(DateTime.Now.AddDays(Aleatorio.Next(1, 60))),
+                    FamiliasBeneficiadas = Aleatorio.Next(15, 160),
+                    Estado = EstadoEntregaProgramada.Programada,
+                    RegistradoPor = "admin",
+                    FechaRegistro = DateTime.UtcNow.AddDays(-Aleatorio.Next(1, 30)),
+                    Detalles = productos.Select(p => new DetalleEntregaProgramada
+                    {
+                        Producto = p.Producto,
+                        SistemaMedida = p.Unidad,
+                        Total = p.Total
+                    }).ToList()
+                });
+            }
+
+            contexto.EntregasProgramadas.AddRange(entregasProgramadas);
+            await contexto.SaveChangesAsync();
+
+            registrador.LogInformation("Se sembraron {Cantidad} entregas por realizar.", entregasProgramadas.Count);
+        }
+
+        private const int MetaVisitasPreviasSembradas = 10;
+
+        private static async Task SembrarVisitasPreviasAsync(ContextoViveres contexto, ILogger registrador)
+        {
+            var existentes = await contexto.VisitasPrevias.CountAsync();
+            var faltantes = MetaVisitasPreviasSembradas - existentes;
+
+            if (faltantes <= 0)
+            {
+                return;
+            }
+
+            var municipiosConDepartamento = Catalogos.MunicipiosPorDepartamento
+                .SelectMany(par => par.Value.Select(municipio => (Departamento: par.Key, Municipio: municipio)))
+                .ToArray();
+
+            var visitas = new List<VisitaPrevia>();
+
+            for (var i = 0; i < faltantes; i++)
+            {
+                // Se toman desde el final de la lista para no repetir los mismos
+                // municipios que ya usaron las entregas programadas de ejemplo.
+                var indice = municipiosConDepartamento.Length - 1 -
+                    ((int)((long)i * municipiosConDepartamento.Length / faltantes) % municipiosConDepartamento.Length);
+                var (departamento, municipio) = municipiosConDepartamento[indice];
+
+                var productos = GenerarProductosSupuestos();
+
+                visitas.Add(new VisitaPrevia
+                {
+                    Lugar = $"Comunidad {municipio}",
+                    Departamento = departamento,
+                    Municipio = municipio,
+                    FechaPropuesta = DateOnly.FromDateTime(DateTime.Now.AddDays(Aleatorio.Next(3, 60))),
+                    FamiliasBeneficiadas = Aleatorio.Next(15, 160),
+                    Estado = EstadoVisitaPrevia.Pendiente,
+                    RegistradoPor = "admin",
+                    FechaRegistro = DateTime.UtcNow.AddDays(-Aleatorio.Next(1, 20)),
+                    Detalles = productos.Select(p => new DetalleVisitaPrevia
+                    {
+                        Producto = p.Producto,
+                        SistemaMedida = p.Unidad,
+                        Total = p.Total
+                    }).ToList()
+                });
+            }
+
+            contexto.VisitasPrevias.AddRange(visitas);
+            await contexto.SaveChangesAsync();
+
+            registrador.LogInformation("Se sembraron {Cantidad} visitas previas.", visitas.Count);
         }
     }
 }

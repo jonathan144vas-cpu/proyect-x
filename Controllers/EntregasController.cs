@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using ControlViveresApp.Data;
+using ControlViveresApp.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +26,7 @@ namespace ControlViveresApp.Controllers
         // LISTAR LUGARES VISITADOS
         public async Task<IActionResult> Index(string? buscar, string? departamento)
         {
-            var consulta = _contexto.Entregas.AsNoTracking();
+            IQueryable<Entrega> consulta = _contexto.Entregas.AsNoTracking().Include(e => e.Detalles);
 
             if (!string.IsNullOrWhiteSpace(buscar))
             {

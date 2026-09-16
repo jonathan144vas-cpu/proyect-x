@@ -22,11 +22,27 @@
             </p>
         </a>
 
+        <a asp-controller="Alimentos" asp-action="ProductosSeparados" class="form-card" style="text-decoration: none; color: inherit; display: block;">
+            <i class="bi bi-boxes" style="font-size: 1.75rem; color: #38bdf8;"></i>
+            <h3 style="margin-top: 0.75rem; color: #f8fafc;">Productos Separados</h3>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.5rem;">
+                Mira cada producto por separado, con todos sus lotes ordenados por fecha de vencimiento.
+            </p>
+        </a>
+
         <a asp-controller="Pedidos" asp-action="Index" class="form-card" style="text-decoration: none; color: inherit; display: block;">
             <i class="bi bi-cart-plus-fill" style="font-size: 1.75rem; color: #fbbf24;"></i>
             <h3 style="margin-top: 0.75rem; color: #f8fafc;">Pedidos por realizar</h3>
             <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.5rem;">
                 Solicita víveres que hacen falta y registra su recepción con comprobante en PDF.
+            </p>
+        </a>
+
+        <a asp-controller="VisitasPrevias" asp-action="Index" class="form-card" style="text-decoration: none; color: inherit; display: block;">
+            <i class="bi bi-clipboard-check" style="font-size: 1.75rem; color: #c4b5fd;"></i>
+            <h3 style="margin-top: 0.75rem; color: #f8fafc;">Revisión Previa</h3>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.5rem;">
+                Propón visitas a comunidades y apruébalas para programarlas como entregas.
             </p>
         </a>
 
@@ -39,10 +55,10 @@
         </a>
 
         <a asp-controller="Entregas" asp-action="Index" class="form-card" style="text-decoration: none; color: inherit; display: block;">
-            <i class="bi bi-geo-alt-fill" style="font-size: 1.75rem; color: #f87171;"></i>
-            <h3 style="margin-top: 0.75rem; color: #f8fafc;">Lugares Visitados</h3>
+            <i class="bi bi-gift-fill" style="font-size: 1.75rem; color: #f87171;"></i>
+            <h3 style="margin-top: 0.75rem; color: #f8fafc;">Donaciones Entregadas</h3>
             <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.5rem;">
-                Consulta el historial de comunidades donde ya se entregaron víveres.
+                Consulta el historial de comunidades donde ya se entregaron víveres, con su comprobante en PDF.
             </p>
         </a>
     </div>

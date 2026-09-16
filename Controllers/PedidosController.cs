@@ -42,9 +42,11 @@ namespace ControlViveresApp.Controllers
             ViewBag.Estado = estado;
 
             var listaPedidos = await consulta
-                // Primero lo que sigue pendiente, y dentro de eso lo más urgente.
+                // Primero lo que sigue pendiente, y dentro de eso lo que se necesita más
+                // pronto (los sin fecha definida quedan al final de su grupo).
                 .OrderBy(p => p.Estado == EstadoPedido.Recibido || p.Estado == EstadoPedido.Cancelado)
-                .ThenByDescending(p => p.Prioridad)
+                .ThenBy(p => p.FechaNecesaria == null ? 1 : 0)
+                .ThenBy(p => p.FechaNecesaria)
                 .ThenByDescending(p => p.Id)
                 .ToListAsync();
 

@@ -3,6 +3,7 @@ using System;
 using ControlViveresApp.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace ControlViveresApp.Migrations
 {
     [DbContext(typeof(ContextoViveres))]
-    partial class ContextoViveresModelSnapshot : ModelSnapshot
+    [Migration("20260916031855_AgregarVisitasPreviasYDetalleDonaciones")]
+    partial class AgregarVisitasPreviasYDetalleDonaciones
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
