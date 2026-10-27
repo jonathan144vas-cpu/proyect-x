@@ -1,0 +1,60 @@
+@{
+    ViewData["Title"] = "Bienvenido";
+    Layout = null; // Pantalla pública limpia, sin menú ni datos del sistema.
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Control de Víveres</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="login-pagina">
+    <div class="login-contenedor">
+
+        <!-- Lado izquierdo: marca y propósito -->
+        <div class="login-marca">
+            <div class="login-emblema"><i class="bi bi-basket2-fill"></i></div>
+            <span class="login-eyebrow">Sistema comunitario de víveres</span>
+            <h1>VÍVERES</h1>
+            <p>Ayudemos a nuestro país a salir de la desnutrición: inventario, pedidos y entregas de víveres, todo en un solo lugar.</p>
+
+            <div class="login-estadistica">
+                <strong>+50</strong>
+                <span>entregas ya registradas en el historial</span>
+            </div>
+
+            <ul class="login-lista">
+                <li>Inventario al día, por lote y vencimiento</li>
+                <li>Entregas transparentes con comprobante</li>
+                <li>Cualquiera puede crear una cuenta</li>
+            </ul>
+        </div>
+
+        <!-- Lado derecho: llamado a la acción -->
+        <div class="login-tarjeta">
+            <h2>Empecemos</h2>
+            <p>Inicia sesión si ya tienes cuenta, o crea una nueva en un minuto</p>
+
+            <div class="bienvenida-acciones">
+                <a asp-controller="Cuentas" asp-action="IniciarSesion" class="btn-guardar bienvenida-boton">
+                    <i class="bi bi-box-arrow-in-right"></i> Iniciar sesión
+                </a>
+                <a asp-controller="Cuentas" asp-action="Registro" class="btn-cancelar bienvenida-boton">
+                    <i class="bi bi-person-plus-fill"></i> Crear una cuenta
+                </a>
+            </div>
+
+            <p class="bienvenida-nota">
+                Es gratis: las cuentas nuevas pueden consultar todo el sistema de inmediato.
+            </p>
+        </div>
+    </div>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+</body>
+</html>

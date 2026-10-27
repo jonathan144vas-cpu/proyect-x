@@ -1,0 +1,123 @@
+@model IEnumerable<Entrega>
+
+@{
+    ViewData["Title"] = "Donaciones Entregadas";
+
+    var buscarActual = ViewBag.Buscar as string;
+    var departamentoActual = ViewBag.Departamento as string;
+
+    // Estos totales vienen del controlador y se calculan sobre TODO el registro,
+    // no sobre lo filtrado, igual que en el inventario.
+    var totalLugares = (int)(ViewBag.TotalLugares ?? 0);
+    var totalFamilias = (int)(ViewBag.TotalFamilias ?? 0);
+    var totalEntregado = (int)(ViewBag.TotalEntregado ?? 0);
+    var totalDepartamentos = (int)(ViewBag.TotalDepartamentos ?? 0);
+
+    // Columnas: Lugar, Departamento, Fecha, Familias, Entregado, Productos, Comprobante
+    var totalColumnas = 7;
+}
+
+<div class="container-fluid">
+    <div class="header-panel">
+        <div>
+            <h2><i class="bi bi-gift-fill"></i> Donaciones Entregadas</h2>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
+                Historial de comunidades de Guatemala donde ya se entregaron víveres (solo lectura)
+            </p>
+        </div>
+    </div>
+
+    <div class="tarjetas-resumen">
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Lugares</div>
+            <div class="tarjeta-valor">@totalLugares</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Departamentos</div>
+            <div class="tarjeta-valor" style="color: #93c5fd;">@totalDepartamentos</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Familias beneficiadas</div>
+            <div class="tarjeta-valor" style="color: #4ade80;">@totalFamilias</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Víveres entregados</div>
+            <div class="tarjeta-valor" style="color: #fbbf24;">@totalEntregado</div>
+        </div>
+    </div>
+
+    <form method="get" class="filtros">
+        <input type="text" name="buscar" placeholder="Buscar lugar o municipio..." value="@buscarActual" />
+        <select name="departamento" asp-items="@(new SelectList(Catalogos.Departamentos, departamentoActual))">
+            <option value="">Todos los departamentos</option>
+        </select>
+        <button type="submit">Filtrar</button>
+    </form>
+
+    <div class="tabla-responsive">
+        <table class="tabla-viveres">
+            <thead>
+                <tr>
+                    <th>Lugar</th>
+                    <th>Departamento</th>
+                    <th>Fecha</th>
+                    <th>Familias</th>
+                    <th>Entregado</th>
+                    <th>Productos entregados</th>
+                    <th>Comprobante</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="@totalColumnas" style="text-align: center; color: #94a3b8; padding: 2rem;">
+                            No hay entregas que coincidan con la búsqueda.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td data-label="Lugar">
+                                <strong>@item.Lugar</strong>
+                                @if (!string.IsNullOrWhiteSpace(item.Municipio))
+                                {
+                                    <div style="color: #64748b; font-size: 0.8rem;">@item.Municipio</div>
+                                }
+                            </td>
+                            <td data-label="Departamento">@item.Departamento</td>
+                            <td data-label="Fecha">@item.FechaEntrega.ToString("dd/MM/yyyy")</td>
+                            <td data-label="Familias">@item.FamiliasBeneficiadas</td>
+                            <td data-label="Entregado">@item.TotalEntregado</td>
+                            <td data-label="Productos entregados">
+                                @if (item.Detalles.Count == 0)
+                                {
+                                    <span style="color: #64748b;">Sin detalle</span>
+                                }
+                                else
+                                {
+                                    <span>@string.Join(", ", item.Detalles.Select(d => $"{d.Producto} ({d.Total} {d.SistemaMedida})"))</span>
+                                }
+                            </td>
+                            <td data-label="Comprobante">
+                                @if (item.EntregaProgramadaId is not null)
+                                {
+                                    <a asp-controller="EntregasProgramadas" asp-action="Comprobante" asp-route-id="@item.EntregaProgramadaId" class="btn-editar" target="_blank">
+                                        PDF
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span style="color: #64748b;">N/A</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

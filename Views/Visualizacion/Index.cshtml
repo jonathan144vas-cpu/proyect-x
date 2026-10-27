@@ -1,0 +1,121 @@
+@model VisualizacionViewModel
+
+@{
+    ViewData["Title"] = "Visualización";
+}
+
+<div class="container-fluid">
+    <div class="header-panel">
+        <div>
+            <h2><i class="bi bi-bar-chart-line-fill"></i> Visualización</h2>
+            <p class="subtitulo-pagina">Lo que tenemos en bodega y los envíos que hay que hacer, en gráficas.</p>
+        </div>
+    </div>
+
+    <div class="tarjetas-resumen tarjetas-seis">
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Unidades en bodega</div>
+            <div class="tarjeta-valor">@Model.UnidadesEnBodega.ToString("N0")</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Productos distintos</div>
+            <div class="tarjeta-valor">@Model.ProductosDistintos</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Unidades por vencer (7 días)</div>
+            <div class="tarjeta-valor">@Model.UnidadesPorVencer.ToString("N0")</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Envíos por hacer</div>
+            <div class="tarjeta-valor">@Model.EnviosPorHacer</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Familias por atender</div>
+            <div class="tarjeta-valor">@Model.FamiliasPorAtender.ToString("N0")</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Pedidos activos</div>
+            <div class="tarjeta-valor">@Model.PedidosActivos</div>
+        </div>
+    </div>
+
+    <h3 class="grafica-seccion">Lo que tenemos</h3>
+    <div class="graficas-grid">
+        <section class="grafica-card">
+            <h4>Víveres por categoría</h4>
+            <p class="grafica-nota">Unidades en bodega según su categoría.</p>
+            <div class="grafica-pastel">
+                <div class="grafica-lienzo"><canvas id="graficaCategorias"></canvas></div>
+                <ul class="leyenda" id="leyendaCategorias"></ul>
+            </div>
+        </section>
+
+        <section class="grafica-card">
+            <h4>Estado de vencimiento</h4>
+            <p class="grafica-nota">Vigente, por vencer en 7 días o ya vencido.</p>
+            <div class="grafica-pastel">
+                <div class="grafica-lienzo"><canvas id="graficaVencimiento"></canvas></div>
+                <ul class="leyenda" id="leyendaVencimiento"></ul>
+            </div>
+        </section>
+
+        <section class="grafica-card grafica-ancha">
+            <h4>Ingreso de víveres por mes</h4>
+            <p class="grafica-nota">Unidades que entraron a la bodega en los últimos meses.</p>
+            <div class="grafica-linea"><canvas id="graficaIngresoMes"></canvas></div>
+        </section>
+    </div>
+
+    <h3 class="grafica-seccion">Envíos y pedidos</h3>
+    <div class="graficas-grid">
+        <section class="grafica-card">
+            <h4>Envíos por estado</h4>
+            <p class="grafica-nota">Programados, completados y cancelados.</p>
+            <div class="grafica-pastel">
+                <div class="grafica-lienzo"><canvas id="graficaEnvios"></canvas></div>
+                <ul class="leyenda" id="leyendaEnvios"></ul>
+            </div>
+        </section>
+
+        <section class="grafica-card">
+            <h4>Envíos pendientes por departamento</h4>
+            <p class="grafica-nota">Hacia dónde hay que enviar víveres.</p>
+            <div class="grafica-pastel">
+                <div class="grafica-lienzo"><canvas id="graficaDepartamentos"></canvas></div>
+                <ul class="leyenda" id="leyendaDepartamentos"></ul>
+            </div>
+        </section>
+
+        <section class="grafica-card">
+            <h4>Pedidos por estado</h4>
+            <p class="grafica-nota">Víveres que hacen falta comprar.</p>
+            <div class="grafica-pastel">
+                <div class="grafica-lienzo"><canvas id="graficaPedidos"></canvas></div>
+                <ul class="leyenda" id="leyendaPedidos"></ul>
+            </div>
+        </section>
+
+        <section class="grafica-card">
+            <h4>Pedidos activos por prioridad</h4>
+            <p class="grafica-nota">Pendientes y solicitados, según qué tan urgentes son.</p>
+            <div class="grafica-pastel">
+                <div class="grafica-lienzo"><canvas id="graficaPrioridad"></canvas></div>
+                <ul class="leyenda" id="leyendaPrioridad"></ul>
+            </div>
+        </section>
+
+        <section class="grafica-card grafica-ancha">
+            <h4>Entregas por mes</h4>
+            <p class="grafica-nota">Las que ya se realizaron frente a las que están programadas.</p>
+            <div class="grafica-linea"><canvas id="graficaEntregasMes"></canvas></div>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script>
+        window.datosVisualizacion = @Json.Serialize(Model);
+    </script>
+    <script src="~/js/visualizacion.js" asp-append-version="true"></script>
+}

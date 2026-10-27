@@ -1,0 +1,31 @@
+using System.ComponentModel.DataAnnotations;
+
+namespace ControlViveresApp.Models
+{
+    /// <summary>
+    /// Un renglón de "Productos propuestos" dentro de una visita previa,
+    /// antes de que se apruebe y se convierta en una Entrega Programada.
+    /// </summary>
+    public class DetalleVisitaPrevia
+    {
+        public int Id { get; set; }
+
+        public int VisitaPreviaId { get; set; }
+        public VisitaPrevia? VisitaPrevia { get; set; }
+
+        [Required(ErrorMessage = "El producto es obligatorio")]
+        [StringLength(100, ErrorMessage = "El producto no puede pasar de 100 caracteres")]
+        [Display(Name = "Producto")]
+        public string Producto { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El sistema de medida es obligatorio")]
+        [StringLength(30)]
+        [Display(Name = "Sistema de medida")]
+        public string SistemaMedida { get; set; } = string.Empty;
+
+        [Required(ErrorMessage = "El total es obligatorio")]
+        [Range(0.01, 1000000, ErrorMessage = "El total debe ser mayor que 0")]
+        [Display(Name = "Total")]
+        public decimal Total { get; set; }
+    }
+}

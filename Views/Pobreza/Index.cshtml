@@ -1,0 +1,96 @@
+@model IEnumerable<DepartamentoPobreza>
+
+@{
+    ViewData["Title"] = "Pobreza en Guatemala";
+
+    var masPobre = Model.OrderByDescending(d => d.PobrezaTotal2023).First();
+}
+
+<div class="container-fluid">
+    <div class="header-panel">
+        <div>
+            <h2><i class="bi bi-geo-alt-fill"></i> Pobreza en Guatemala</h2>
+            <p class="subtitulo-pagina">
+                Cómo se distribuye la pobreza en nuestro país y hacia dónde está llegando la campaña.
+                Cifras más recientes: ENCOVI 2023 y el informe de pobreza multidimensional de junio de 2025.
+            </p>
+        </div>
+    </div>
+
+    <div class="tarjetas-resumen">
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Pobreza general en el país</div>
+            <div class="tarjeta-valor">@DatosPobreza.NacionalTotal2023.ToString("0.0")%</div>
+            <div class="tarjeta-detalle">ENCOVI 2023 (2014: @DatosPobreza.NacionalTotal2014.ToString("0.0")%)</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Pobreza extrema en el país</div>
+            <div class="tarjeta-valor">@DatosPobreza.NacionalExtrema2023.ToString("0.0")%</div>
+            <div class="tarjeta-detalle">ENCOVI 2023 (2014: @DatosPobreza.NacionalExtrema2014.ToString("0.0")%)</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Pobreza multidimensional</div>
+            <div class="tarjeta-valor">@DatosPobreza.NacionalMultidimensional.ToString("0.0")%</div>
+            <div class="tarjeta-detalle">Rural @DatosPobreza.RuralMultidimensional.ToString("0.0")% · urbana @DatosPobreza.UrbanaMultidimensional.ToString("0.0")%</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Departamento con más pobreza</div>
+            <div class="tarjeta-valor">@masPobre.Nombre</div>
+            <div class="tarjeta-detalle">@masPobre.PobrezaTotal2023.ToString("0.0")% general · @masPobre.PobrezaMultidimensional2023.ToString("0.0")% multidimensional</div>
+        </div>
+    </div>
+
+    <div class="mapa-controles">
+        <div class="segmentado" role="group" aria-label="Indicador del mapa">
+            <button type="button" class="activo" data-indicador="general" aria-pressed="true">Pobreza general</button>
+            <button type="button" data-indicador="extrema" aria-pressed="false">Pobreza extrema</button>
+            <button type="button" data-indicador="multidimensional" aria-pressed="false">Pobreza multidimensional</button>
+        </div>
+
+        <label class="interruptor">
+            <input type="checkbox" id="verEntregas" />
+            <span>Mostrar dónde ha entregado la campaña</span>
+        </label>
+    </div>
+
+    <div class="mapa-grid">
+        <section class="grafica-card mapa-card">
+            <h4 id="tituloMapa">Pobreza general por departamento, ENCOVI 2023</h4>
+            <p class="grafica-nota">Porcentaje de la población que vive en pobreza. Toca un departamento para ver su detalle.</p>
+
+            <div class="mapa-zona">
+                <div class="mapa-lienzo" id="mapaPobreza" data-origen="@Url.Content("~/data/departamentos.json")">
+                    Cargando mapa…
+                </div>
+                <div class="mapa-tooltip" id="mapaTooltip" hidden></div>
+            </div>
+
+            <ul class="leyenda leyenda-horizontal" id="mapaLeyenda"></ul>
+        </section>
+
+        <aside class="mapa-lateral">
+            <section class="grafica-card" id="panelDetalle"></section>
+
+            <section class="grafica-card">
+                <h4>Departamentos de mayor a menor</h4>
+                <ol class="ranking" id="rankingDepartamentos"></ol>
+            </section>
+        </aside>
+    </div>
+
+    <p class="fuente-datos">
+        Fuentes: Instituto Nacional de Estadística (INE), Encuesta Nacional de Condiciones de Vida
+        (ENCOVI) 2023 y 2014, la misma que usan los mapas de pobreza de SEGEPLAN. Pobreza
+        multidimensional: informe "Pobreza multidimensional en Guatemala: actualización del IPM-Gt con
+        datos de la ENCOVI 2023" (MIDES, INE, SEGEPLAN y MINFIN, con el PNUD; junio de 2025). La pobreza
+        multidimensional mide privaciones en salud y alimentación, educación, empleo, vivienda y servicios
+        básicos, no solo el ingreso. Límites departamentales: geoBoundaries (datos de OpenStreetMap).
+    </p>
+</div>
+
+@section Scripts {
+    <script>
+        window.datosPobreza = @Json.Serialize(Model);
+    </script>
+    <script src="~/js/mapa-pobreza.js" asp-append-version="true"></script>
+}
