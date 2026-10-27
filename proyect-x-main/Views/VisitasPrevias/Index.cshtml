@@ -1,0 +1,222 @@
+@model IEnumerable<VisitaPrevia>
+
+@{
+    ViewData["Title"] = "Revisión Previa";
+
+    var esAdmin = User.IsInRole("Admin");
+    var buscarActual = ViewBag.Buscar as string;
+    var departamentoActual = ViewBag.Departamento as string;
+    var estadoActual = ViewBag.Estado as EstadoVisitaPrevia?;
+
+    var totalPendientes = (int)(ViewBag.TotalPendientes ?? 0);
+    var totalAprobadas = (int)(ViewBag.TotalAprobadas ?? 0);
+
+    var totalColumnas = esAdmin ? 8 : 7;
+
+    string ClaseEstado(EstadoVisitaPrevia estado) => estado switch
+    {
+        EstadoVisitaPrevia.Pendiente => "etiqueta etiqueta-ambar",
+        EstadoVisitaPrevia.Aprobada => "etiqueta etiqueta-verde",
+        _ => "etiqueta etiqueta-gris"
+    };
+}
+
+<div class="container-fluid">
+    <div class="header-panel">
+        <div>
+            <h2><i class="bi bi-clipboard-check"></i> Revisión Previa</h2>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
+                Visitas propuestas, pendientes de aprobar antes de programarlas
+            </p>
+        </div>
+
+        @if (esAdmin)
+        {
+            <a asp-action="Crear" class="btn-nuevo">+ Agregar visita</a>
+        }
+    </div>
+
+    <div class="tarjetas-resumen">
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Pendientes</div>
+            <div class="tarjeta-valor" style="color: #fbbf24;">@totalPendientes</div>
+        </div>
+        <div class="tarjeta">
+            <div class="tarjeta-etiqueta">Aprobadas</div>
+            <div class="tarjeta-valor" style="color: #4ade80;">@totalAprobadas</div>
+        </div>
+    </div>
+
+    <form method="get" class="filtros">
+        <input type="text" name="buscar" placeholder="Buscar lugar o municipio..." value="@buscarActual" />
+        <select name="departamento" asp-items="@(new SelectList(Catalogos.Departamentos, departamentoActual))">
+            <option value="">Todos los departamentos</option>
+        </select>
+        <select name="estado" asp-items="@(new SelectList(Html.GetEnumSelectList<EstadoVisitaPrevia>(), "Value", "Text", ((int?)estadoActual)?.ToString()))">
+            <option value="">Todos los estados</option>
+        </select>
+        <button type="submit">Filtrar</button>
+    </form>
+
+    <div class="tabla-responsive">
+        <table class="tabla-viveres">
+            <thead>
+                <tr>
+                    <th>Lugar</th>
+                    <th>Departamento / Municipio</th>
+                    <th>Fecha propuesta</th>
+                    <th>Familias</th>
+                    <th>Estado</th>
+                    <th>Fecha emitida</th>
+                    <th>Productos</th>
+                    @if (esAdmin)
+                    {
+                        <th>Acciones</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr>
+                        <td colspan="@totalColumnas" style="text-align: center; color: #94a3b8; padding: 2rem;">
+                            No hay visitas previas que coincidan con la búsqueda.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td data-label="Lugar"><strong>@item.Lugar</strong></td>
+                            <td data-label="Departamento / Municipio">@item.Municipio, @item.Departamento</td>
+                            <td data-label="Fecha propuesta">@item.FechaPropuesta.ToString("dd/MM/yyyy")</td>
+                            <td data-label="Familias">@item.FamiliasBeneficiadas</td>
+                            <td data-label="Estado">
+                                <span class="@ClaseEstado(item.Estado)">@item.Estado</span>
+                            </td>
+                            <td data-label="Fecha emitida">@item.FechaRegistro.ToString("dd/MM/yyyy")</td>
+                            <td data-label="Productos">
+                                <button type="button" class="btn-editar js-ver-productos" title="Ver productos que se necesitan"
+                                        data-lugar="@item.Lugar"
+                                        data-productos="@System.Text.Json.JsonSerializer.Serialize(item.Detalles.Select(d => new { d.Producto, d.SistemaMedida, d.Total }))">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </td>
+                            @if (esAdmin)
+                            {
+                                <td data-label="Acciones" class="acciones">
+                                    @if (item.Estado == EstadoVisitaPrevia.Pendiente)
+                                    {
+                                        <form asp-action="Aprobar" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                            <button type="button" class="btn-recibir js-aprobar" data-lugar="@item.Lugar">
+                                                Programar entrega
+                                            </button>
+                                        </form>
+
+                                        <a asp-action="Editar" asp-route-id="@item.Id" class="btn-editar">Editar</a>
+
+                                        <form asp-action="Rechazar" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                            <button type="button" class="btn-eliminar js-rechazar" data-lugar="@item.Lugar">
+                                                Rechazar
+                                            </button>
+                                        </form>
+                                    }
+
+                                    @if (item.Estado != EstadoVisitaPrevia.Aprobada)
+                                    {
+                                        <form asp-action="Eliminar" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                            <button type="button" class="btn-eliminar js-eliminar" data-nombre="@item.Lugar">
+                                                Eliminar
+                                            </button>
+                                        </form>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmar(boton, opciones) {
+            var formulario = boton.closest('form');
+
+            Swal.fire(Object.assign({
+                background: '#1e293b',
+                color: '#f8fafc',
+                showCancelButton: true,
+                cancelButtonColor: '#475569',
+                cancelButtonText: 'Cancelar'
+            }, opciones)).then(function (resultado) {
+                if (resultado.isConfirmed) {
+                    formulario.submit();
+                }
+            });
+        }
+
+        document.querySelectorAll('.js-aprobar').forEach(function (boton) {
+            boton.addEventListener('click', function () {
+                confirmar(boton, {
+                    title: '¿Programar esta entrega?',
+                    text: 'Se creará una Entrega Programada para "' + boton.dataset.lugar + '" con los productos propuestos.',
+                    icon: 'question',
+                    confirmButtonColor: '#10b981',
+                    confirmButtonText: 'Sí, programar'
+                });
+            });
+        });
+
+        document.querySelectorAll('.js-ver-productos').forEach(function (boton) {
+            boton.addEventListener('click', function () {
+                var productos = JSON.parse(boton.dataset.productos || '[]');
+
+                var filas = productos.length === 0
+                    ? '<p style="color:#94a3b8;">No se registraron productos.</p>'
+                    : '<ul style="text-align:left; margin:0; padding-left:1.1rem;">' +
+                        productos.map(function (p) {
+                            return '<li>' + p.Producto + ' &mdash; ' + p.Total + ' ' + p.SistemaMedida + '</li>';
+                        }).join('') +
+                      '</ul>';
+
+                Swal.fire({
+                    title: 'Productos propuestos para ' + boton.dataset.lugar,
+                    html: filas,
+                    background: '#1e293b',
+                    color: '#f8fafc',
+                    confirmButtonColor: '#3b82f6',
+                    confirmButtonText: 'Cerrar'
+                });
+            });
+        });
+
+        document.querySelectorAll('.js-rechazar').forEach(function (boton) {
+            boton.addEventListener('click', function () {
+                confirmar(boton, {
+                    title: '¿Rechazar visita?',
+                    text: 'Se rechazará la visita propuesta a "' + boton.dataset.lugar + '".',
+                    icon: 'warning',
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'Sí, rechazar'
+                });
+            });
+        });
+
+        document.querySelectorAll('.js-eliminar').forEach(function (boton) {
+            boton.addEventListener('click', function () {
+                confirmar(boton, {
+                    title: '¿Eliminar visita previa?',
+                    text: 'Estás a punto de eliminar la visita a "' + boton.dataset.nombre + '".',
+                    icon: 'warning',
+                    confirmButtonColor: '#ef4444',
+                    confirmButtonText: 'Sí, eliminar'
+                });
+            });
+        });
+    </script>
+}

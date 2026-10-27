@@ -1,0 +1,112 @@
+@model EntregaProgramada
+
+@{
+    ViewData["Title"] = "Nueva Entrega Programada";
+}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+<div class="container-fluid">
+    <div class="header-panel">
+        <h2>Nueva Entrega Programada</h2>
+    </div>
+
+    <div class="form-card">
+        <form asp-action="Crear" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <partial name="_FormularioEntregaProgramada" model="Model" />
+            <!-- Contenedor del Mapa -->
+    <div class="mb-3 mt-3">
+        <label class="form-label font-weight-bold" style="color: white;">Ubicación en el mapa</label>
+        <div id="mapaEntrega" style="height: 350px; width: 100%; border-radius: 8px;"></div>
+    </div>
+
+    <input type="hidden" id="Latitud" name="Latitud" />
+    <input type="hidden" id="Longitud" name="Longitud" />
+
+            <div class="form-buttons">
+                <button type="submit" class="btn-guardar">Guardar</button>
+                <a asp-action="Index" class="btn-cancelar">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Librería JS de Leaflet -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Inicializar el mapa centrado en Guatemala
+            var map = L.map('mapaEntrega').setView([14.634915, -90.506882], 7);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 18,
+                attribution: '© OpenStreetMap'
+            }).addTo(map);
+
+            var marker;
+
+            // Buscamos los selects usando el atributo 'name' (mucho más seguro en ASP.NET Core)
+            var selectDepto = document.querySelector("select[name*='Departamento']");
+            var selectMuni = document.querySelector("select[name*='Municipio']");
+
+            console.log("Select Departamento detectado:", selectDepto);
+            console.log("Select Municipio detectado:", selectMuni);
+
+            function buscarUbicacion() {
+                if (!selectDepto || !selectMuni) return;
+
+                var deptoText = selectDepto.options[selectDepto.selectedIndex]?.text || "";
+                var muniText = selectMuni.options[selectMuni.selectedIndex]?.text || "";
+
+                console.log("Intentando buscar:", muniText, ",", deptoText);
+
+                if (!muniText || muniText.includes("Seleccione") || muniText.includes("Seleccionar")) return;
+
+                var query = `${muniText}, ${deptoText}, Guatemala`;
+
+                fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.length > 0) {
+                            var lat = parseFloat(data[0].lat);
+                            var lon = parseFloat(data[0].lon);
+
+                            // Mover el mapa al lugar encontrado
+                            map.setView([lat, lon], 13);
+
+                            if (marker) {
+                                marker.setLatLng([lat, lon]);
+                            } else {
+                                marker = L.marker([lat, lon], { draggable: true }).addTo(map);
+                                marker.on('dragend', function () {
+                                    var pos = marker.getLatLng();
+                                    var inputLat = document.querySelector("input[name*='Latitud']");
+                                    var inputLon = document.querySelector("input[name*='Longitud']");
+                                    if (inputLat) inputLat.value = pos.lat;
+                                    if (inputLon) inputLon.value = pos.lng;
+                                });
+                            }
+
+                            // Asignar a los inputs ocultos
+                            var inputLat = document.querySelector("input[name*='Latitud']");
+                            var inputLon = document.querySelector("input[name*='Longitud']");
+                            if (inputLat) inputLat.value = lat;
+                            if (inputLon) inputLon.value = lon;
+
+                            console.log("¡Mapa centrado en coordenadas:", lat, lon, "!");
+                        } else {
+                            console.warn("No se encontraron coordenadas para la consulta:", query);
+                        }
+                    })
+                    .catch(err => console.error("Error al conectar con el mapa:", err));
+            }
+
+            // Escuchar cuando el usuario cambie de opción en los selects
+            if (selectDepto) selectDepto.addEventListener("change", buscarUbicacion);
+            if (selectMuni) selectMuni.addEventListener("change", buscarUbicacion);
+        });
+    </script>
+}
