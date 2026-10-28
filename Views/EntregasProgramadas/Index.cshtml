@@ -49,7 +49,7 @@
 
     <form method="get" class="filtros">
         <input type="text" name="buscar" placeholder="Buscar lugar o municipio..." value="@buscarActual" />
-        <select name="departamento" asp-items="@(new SelectList(Catalogos.Departamentos, departamentoActual))">
+        <select name="departamento" asp-items="@(new SelectList(Catalogos.NombresDepartamentos, departamentoActual))">
             <option value="">Todos los departamentos</option>
         </select>
         <select name="estado" asp-items="@(new SelectList(Html.GetEnumSelectList<EstadoEntregaProgramada>(), "Value", "Text", ((int?)estadoActual)?.ToString()))">
@@ -104,18 +104,28 @@
                                     @if (item.Estado == EstadoEntregaProgramada.Programada)
                                     {
                                         <form asp-action="Completar" asp-route-id="@item.Id" method="post" style="display:inline;">
-                                            <button type="button" class="btn-recibir js-completar" data-lugar="@item.Lugar">
-                                                Completar
-                                            </button>
-                                        </form>
+    <button type="button"
+            class="btn-recibir envio-btn js-completar"
+            data-lugar="@item.Lugar">
 
-                                        <a asp-action="Editar" asp-route-id="@item.Id" class="btn-editar">Editar</a>
+        <span class="envio-btn__texto">Completar envío</span>
 
-                                        <form asp-action="Cancelar" asp-route-id="@item.Id" method="post" style="display:inline;">
-                                            <button type="button" class="btn-advertencia js-cancelar" data-lugar="@item.Lugar">
-                                                Cancelar
-                                            </button>
-                                        </form>
+        <span class="envio-btn__exito" aria-hidden="true">
+            Envío exitoso
+            <svg viewBox="0 0 12 12" aria-hidden="true">
+                <polyline points="1.5 6.4 4.5 9.2 10.5 2.1"></polyline>
+            </svg>
+        </span>
+
+        <span class="envio-camion" aria-hidden="true">
+            <span class="envio-camion__carga"></span>
+            <span class="envio-camion__cabina"></span>
+            <span class="envio-camion__rueda envio-camion__rueda--una"></span>
+            <span class="envio-camion__rueda envio-camion__rueda--dos"></span>
+        </span>
+
+    </button>
+</form>
                                     }
 
                                     @if (item.Estado == EstadoEntregaProgramada.Completada)
@@ -156,19 +166,31 @@
         }
 
         function confirmar(boton, opciones) {
-            var formulario = boton.closest('form');
+    var formulario = boton.closest('form');
 
-            Swal.fire(Object.assign({
-                background: '#1e293b',
-                color: '#f8fafc',
-                showCancelButton: true,
-                cancelButtonColor: '#475569',
-                cancelButtonText: 'Cancelar'
-            }, opciones)).then(function (resultado) {
-                if (resultado.isConfirmed) {
-                    formulario.submit();
-                }
+    Swal.fire(Object.assign({
+        background: '#1e293b',
+        color: '#f8fafc',
+        showCancelButton: true,
+        cancelButtonColor: '#475569',
+        cancelButtonText: 'Cancelar'
+    }, opciones)).then(function (resultado) {
+
+        if (!resultado.isConfirmed) {
+            return;
+        }
+
+        if (
+            boton.classList.contains('js-completar') &&
+            typeof window.animarEnvio === 'function'
+        ) {
+            window.animarEnvio(boton, function () {
+                formulario.submit();
             });
+        } else {
+            formulario.submit();
+        }
+    });
         }
 
         document.querySelectorAll('.js-completar').forEach(function (boton) {
