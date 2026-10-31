@@ -129,3 +129,10 @@
         barra.style.width = '0';
     });
 })();
+
+// Si la fila recién agregada queda fuera de la pantalla, se lleva a la vista.
+(function () {
+    var fila = document.querySelector('tr.fila-nueva');
+    if (!fila) return;
+    setTimeout(function () { fila.scrollIntoView({ block: 'center', behavior: 'auto' }); }, 150);
+})();

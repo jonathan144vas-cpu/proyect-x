@@ -1,6 +1,7 @@
 @model IEnumerable<EntregaProgramada>
 
 @{
+    var filaNuevaId = TempData["FilaNuevaId"] as int?;
     ViewData["Title"] = "Entregas Programadas";
 
     var esAdmin = User.IsInRole("Admin");
@@ -87,7 +88,7 @@
                 {
                     @foreach (var item in Model)
                     {
-                        <tr>
+                        <tr class="@(item.Id == filaNuevaId ? "fila-nueva" : "")">
                             <td data-label="Lugar"><strong>@item.Lugar</strong></td>
                             <td data-label="Departamento / Municipio">@item.Municipio, @item.Departamento</td>
                             <td data-label="Fecha programada">@item.FechaProgramada.ToString("dd/MM/yyyy")</td>
@@ -104,28 +105,18 @@
                                     @if (item.Estado == EstadoEntregaProgramada.Programada)
                                     {
                                         <form asp-action="Completar" asp-route-id="@item.Id" method="post" style="display:inline;">
-    <button type="button"
-            class="btn-recibir envio-btn js-completar"
-            data-lugar="@item.Lugar">
+                                            <button type="button" class="btn-recibir js-completar" data-lugar="@item.Lugar">
+                                                Completar
+                                            </button>
+                                        </form>
 
-        <span class="envio-btn__texto">Completar envío</span>
+                                        <a asp-action="Editar" asp-route-id="@item.Id" class="btn-editar">Editar</a>
 
-        <span class="envio-btn__exito" aria-hidden="true">
-            Envío exitoso
-            <svg viewBox="0 0 12 12" aria-hidden="true">
-                <polyline points="1.5 6.4 4.5 9.2 10.5 2.1"></polyline>
-            </svg>
-        </span>
-
-        <span class="envio-camion" aria-hidden="true">
-            <span class="envio-camion__carga"></span>
-            <span class="envio-camion__cabina"></span>
-            <span class="envio-camion__rueda envio-camion__rueda--una"></span>
-            <span class="envio-camion__rueda envio-camion__rueda--dos"></span>
-        </span>
-
-    </button>
-</form>
+                                        <form asp-action="Cancelar" asp-route-id="@item.Id" method="post" style="display:inline;">
+                                            <button type="button" class="btn-advertencia js-cancelar" data-lugar="@item.Lugar">
+                                                Cancelar
+                                            </button>
+                                        </form>
                                     }
 
                                     @if (item.Estado == EstadoEntregaProgramada.Completada)
@@ -166,31 +157,19 @@
         }
 
         function confirmar(boton, opciones) {
-    var formulario = boton.closest('form');
+            var formulario = boton.closest('form');
 
-    Swal.fire(Object.assign({
-        background: '#1e293b',
-        color: '#f8fafc',
-        showCancelButton: true,
-        cancelButtonColor: '#475569',
-        cancelButtonText: 'Cancelar'
-    }, opciones)).then(function (resultado) {
-
-        if (!resultado.isConfirmed) {
-            return;
-        }
-
-        if (
-            boton.classList.contains('js-completar') &&
-            typeof window.animarEnvio === 'function'
-        ) {
-            window.animarEnvio(boton, function () {
-                formulario.submit();
+            Swal.fire(Object.assign({
+                background: '#1e293b',
+                color: '#f8fafc',
+                showCancelButton: true,
+                cancelButtonColor: '#475569',
+                cancelButtonText: 'Cancelar'
+            }, opciones)).then(function (resultado) {
+                if (resultado.isConfirmed) {
+                    formulario.submit();
+                }
             });
-        } else {
-            formulario.submit();
-        }
-    });
         }
 
         document.querySelectorAll('.js-completar').forEach(function (boton) {

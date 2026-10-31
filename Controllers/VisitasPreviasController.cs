@@ -98,6 +98,7 @@ namespace ControlViveresApp.Controllers
 
             TempData["Mensaje"] = $"Se registró la visita previa a {visita.Lugar}";
             TempData["Tipo"] = "success";
+            TempData["FilaNuevaId"] = visita.Id;
 
             return RedirectToAction(nameof(Index));
         }
@@ -170,6 +171,7 @@ namespace ControlViveresApp.Controllers
 
             TempData["Mensaje"] = "Visita previa actualizada correctamente";
             TempData["Tipo"] = "success";
+            TempData["FilaNuevaId"] = existente.Id;
 
             return RedirectToAction(nameof(Index));
         }
@@ -254,6 +256,7 @@ namespace ControlViveresApp.Controllers
 
             TempData["Mensaje"] = "Visita previa rechazada";
             TempData["Tipo"] = "success";
+            TempData["FilaNuevaId"] = visita.Id;
 
             return RedirectToAction(nameof(Index));
         }

@@ -1,6 +1,7 @@
 @model IEnumerable<VisitaPrevia>
 
 @{
+    var filaNuevaId = TempData["FilaNuevaId"] as int?;
     ViewData["Title"] = "Revisión Previa";
 
     var esAdmin = User.IsInRole("Admin");
@@ -88,7 +89,7 @@
                 {
                     @foreach (var item in Model)
                     {
-                        <tr>
+                        <tr class="@(item.Id == filaNuevaId ? "fila-nueva" : "")">
                             <td data-label="Lugar"><strong>@item.Lugar</strong></td>
                             <td data-label="Departamento / Municipio">@item.Municipio, @item.Departamento</td>
                             <td data-label="Fecha propuesta">@item.FechaPropuesta.ToString("dd/MM/yyyy")</td>

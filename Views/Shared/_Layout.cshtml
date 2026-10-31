@@ -46,7 +46,7 @@
                     <p class="sidebar-section">Control de Inventario</p>
 
                     <a asp-controller="Alimentos" asp-action="Index" class="sidebar-link @ActivoAccion("Alimentos", "Index")">
-                        <i class="bi bi-grid-fill"></i> <span>Inventario</span>
+                        <i class="bi bi-grid-fill"></i> <span>Inventario<small class="sub-parentesis">(Donaciones de personas)</small></span>
                     </a>
 
                     <a asp-controller="Alimentos" asp-action="ProductosSeparados" class="sidebar-link @ActivoAccion("Alimentos", "ProductosSeparados")">
@@ -56,7 +56,7 @@
                     <p class="sidebar-section sidebar-section-aparte">Pedidos</p>
 
                     <a asp-controller="Pedidos" asp-action="Index" class="sidebar-link @Activo("Pedidos")">
-                        <i class="bi bi-cart-plus-fill"></i> <span>Pedidos por realizar</span>
+                        <i class="bi bi-cart-plus-fill"></i> <span>Pedidos por realizar<small class="sub-parentesis">(Empresas y proveedores)</small></span>
                     </a>
 
                     <p class="sidebar-section sidebar-section-aparte">Entregas</p>

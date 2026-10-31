@@ -1,6 +1,7 @@
 @model IEnumerable<Pedido>
 
 @{
+    var filaNuevaId = TempData["FilaNuevaId"] as int?;
     ViewData["Title"] = "Pedidos por Realizar";
 
     var esAdmin = User.IsInRole("Admin");
@@ -33,7 +34,7 @@
 <div class="container-fluid">
     <div class="header-panel">
         <div>
-            <h2><i class="bi bi-cart-plus"></i> Pedidos por Realizar</h2>
+            <h2><i class="bi bi-cart-plus"></i> Pedidos por Realizar <small class="sub-parentesis">(Empresas y proveedores)</small></h2>
             <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
                 Lista de víveres que hacen falta comprar
             </p>
@@ -99,7 +100,7 @@
                 {
                     @foreach (var item in Model)
                     {
-                        <tr>
+                        <tr class="@(item.Id == filaNuevaId ? "fila-nueva" : "")">
                             <td data-label="Artículo">
                                 <strong>@item.Articulo</strong>
                                 @if (!string.IsNullOrWhiteSpace(item.Proveedor))
@@ -127,7 +128,8 @@
                                         <form asp-action="Recibir" asp-route-id="@item.Id" method="post" style="display:inline;">
                                             <button type="button" class="btn-recibir js-recibir"
                                                     data-articulo="@item.Articulo"
-                                                    data-cantidad="@item.Cantidad @item.UnidadMedida">
+                                                    data-cantidad="@item.Cantidad @item.UnidadMedida"
+                                                    data-vencimiento="@item.FechaVencimiento?.ToString("yyyy-MM-dd")">
                                                 Recibir
                                             </button>
                                         </form>
@@ -201,12 +203,56 @@
 
         document.querySelectorAll('.js-recibir').forEach(function (boton) {
             boton.addEventListener('click', function () {
-                confirmar(boton, {
+                var formulario = boton.closest('form');
+                var vencimiento = boton.dataset.vencimiento;
+                var detalle = 'Se sumarán ' + boton.dataset.cantidad + ' de "' + boton.dataset.articulo + '" al inventario.';
+
+                // El pedido ya trae su fecha de vencimiento: pasa igual al inventario.
+                if (vencimiento) {
+                    var partes = vencimiento.split('-');
+                    confirmar(boton, {
+                        title: '¿Marcar como recibido?',
+                        text: detalle + ' Vence el ' + partes[2] + '/' + partes[1] + '/' + partes[0] + '.',
+                        icon: 'question',
+                        confirmButtonColor: '#10b981',
+                        confirmButtonText: 'Sí, recibir'
+                    });
+                    return;
+                }
+
+                // Sin fecha en el pedido: se pide aquí para que el producto no entre "sin fecha".
+                Swal.fire({
                     title: '¿Marcar como recibido?',
-                    text: 'Se sumarán ' + boton.dataset.cantidad + ' de "' + boton.dataset.articulo + '" al inventario.',
-                    icon: 'question',
+                    html: '<p style="margin-bottom:0.9rem">' + detalle + '</p>' +
+                          '<label for="fechaVenc" style="display:block;text-align:left;font-size:0.85rem;margin-bottom:0.3rem">Fecha de vencimiento</label>' +
+                          '<input id="fechaVenc" type="date" class="swal2-input" style="margin:0;width:100%">' +
+                          '<label style="display:flex;gap:0.5rem;align-items:center;margin-top:0.9rem;font-size:0.85rem">' +
+                          '<input id="sinVenc" type="checkbox"> Este producto no tiene fecha de vencimiento</label>',
+                    focusConfirm: false,
+                    showCancelButton: true,
+                    cancelButtonColor: '#475569',
+                    cancelButtonText: 'Cancelar',
                     confirmButtonColor: '#10b981',
-                    confirmButtonText: 'Sí, recibir'
+                    confirmButtonText: 'Sí, recibir',
+                    preConfirm: function () {
+                        var fecha = document.getElementById('fechaVenc').value;
+                        var sin = document.getElementById('sinVenc').checked;
+                        if (!fecha && !sin) {
+                            Swal.showValidationMessage('Escribe la fecha de vencimiento o marca que no tiene.');
+                            return false;
+                        }
+                        return sin ? '' : fecha;
+                    }
+                }).then(function (resultado) {
+                    if (!resultado.isConfirmed) return;
+                    if (resultado.value) {
+                        var campo = document.createElement('input');
+                        campo.type = 'hidden';
+                        campo.name = 'fechaVencimiento';
+                        campo.value = resultado.value;
+                        formulario.appendChild(campo);
+                    }
+                    formulario.submit();
                 });
             });
         });

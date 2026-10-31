@@ -115,6 +115,7 @@ namespace ControlViveresApp.Controllers
 
             TempData["Mensaje"] = $"Se programó la entrega a {entrega.Lugar}";
             TempData["Tipo"] = "success";
+            TempData["FilaNuevaId"] = entrega.Id;
 
             return RedirectToAction(nameof(Index));
         }
@@ -187,6 +188,7 @@ namespace ControlViveresApp.Controllers
 
             TempData["Mensaje"] = "Entrega programada actualizada correctamente";
             TempData["Tipo"] = "success";
+            TempData["FilaNuevaId"] = existente.Id;
 
             return RedirectToAction(nameof(Index));
         }
@@ -301,6 +303,7 @@ namespace ControlViveresApp.Controllers
                 : $"Entrega a {entrega.Lugar} completada con observaciones: {string.Join(" ", avisos)}";
             TempData["Tipo"] = avisos.Count == 0 ? "success" : "warning";
             TempData["ComprobanteEntregaId"] = entrega.Id;
+            TempData["FilaNuevaId"] = entrega.Id;
 
             return RedirectToAction(nameof(Index));
         }
@@ -325,6 +328,7 @@ namespace ControlViveresApp.Controllers
 
             TempData["Mensaje"] = "Entrega programada cancelada";
             TempData["Tipo"] = "success";
+            TempData["FilaNuevaId"] = entrega.Id;
 
             return RedirectToAction(nameof(Index));
         }

@@ -8,16 +8,11 @@
     var NS = 'http://www.w3.org/2000/svg';
 
     // Cinco rangos por indicador, de menos a más pobreza. Cada rango lleva un tono
-    // de la misma gama azul: más claro significa más pobreza.
-    // En modo oscuro lo más claro destaca (más pobreza = tono más claro); en modo claro
-    // se invierte la escala para que más pobreza siempre sea el tono más fuerte.
-    var ESCALA_AZUL = ['#104281', '#1c5cab', '#2a78d6', '#6da7ec', '#b7d3f6'];
-    var COLORES = ESCALA_AZUL.slice();
-    function ajustarColoresAlTema() {
-        var claro = document.documentElement.getAttribute('data-tema') === 'claro';
-        COLORES = claro ? ESCALA_AZUL.slice().reverse() : ESCALA_AZUL.slice();
-    }
-    ajustarColoresAlTema();
+    // de la misma gama roja: más oscuro significa más pobreza.
+    // Escala roja de cinco tonos, igual en modo claro y oscuro: mientras más oscuro el rojo,
+    // más pobreza tiene el departamento.
+    var COLORES = ['#fde2dd', '#f8a89e', '#e8604f', '#bb2a22', '#7a1410'];
+    function ajustarColoresAlTema() { /* la escala es la misma en los dos temas */ }
     var INDICADORES = {
         general: {
             campo: 'pobrezaTotal2023',

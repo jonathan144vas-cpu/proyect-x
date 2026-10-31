@@ -139,6 +139,7 @@ namespace ControlViveresApp.Controllers
 
             TempData["Mensaje"] = "Alimento agregado correctamente";
             TempData["Tipo"] = "success";
+            TempData["FilaNuevaId"] = alimento.Id;
 
             return RedirectToAction(nameof(Index));
         }

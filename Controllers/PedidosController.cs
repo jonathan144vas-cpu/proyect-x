@@ -70,7 +70,7 @@ namespace ControlViveresApp.Controllers
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Crear(
-            [Bind("Articulo,Categoria,Cantidad,UnidadMedida,ProveedorId,FechaNecesaria,FechaVencimiento,Prioridad,Estado,Observaciones")] Pedido pedido)
+            [Bind("Articulo,Categoria,Cantidad,UnidadMedida,ProveedorId,FechaNecesaria,Prioridad,Estado,Observaciones")] Pedido pedido)
         {
             ValidarCatalogos(pedido);
             await ValidarProveedorAsync(pedido);
@@ -89,6 +89,7 @@ namespace ControlViveresApp.Controllers
 
             TempData["Mensaje"] = "Pedido registrado correctamente";
             TempData["Tipo"] = "success";
+            TempData["FilaNuevaId"] = pedido.Id;
 
             return RedirectToAction(nameof(Index));
         }
@@ -119,7 +120,7 @@ namespace ControlViveresApp.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Editar(
             int id,
-            [Bind("Id,Articulo,Categoria,Cantidad,UnidadMedida,ProveedorId,FechaNecesaria,FechaVencimiento,Prioridad,Estado,Observaciones")] Pedido pedido)
+            [Bind("Id,Articulo,Categoria,Cantidad,UnidadMedida,ProveedorId,FechaNecesaria,Prioridad,Estado,Observaciones")] Pedido pedido)
         {
             if (id != pedido.Id) return NotFound();
 
@@ -157,7 +158,6 @@ namespace ControlViveresApp.Controllers
 
             existente.ProveedorId = pedido.ProveedorId;
             existente.FechaNecesaria = pedido.FechaNecesaria;
-            existente.FechaVencimiento = pedido.FechaVencimiento;
             existente.Prioridad = pedido.Prioridad;
             existente.Estado = pedido.Estado;
             existente.Observaciones = pedido.Observaciones;
@@ -166,6 +166,7 @@ namespace ControlViveresApp.Controllers
 
             TempData["Mensaje"] = "Pedido actualizado correctamente";
             TempData["Tipo"] = "success";
+            TempData["FilaNuevaId"] = existente.Id;
 
             return RedirectToAction(nameof(Index));
         }
@@ -174,7 +175,7 @@ namespace ControlViveresApp.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Recibir(int id)
+        public async Task<IActionResult> Recibir(int id, DateOnly? fechaVencimiento)
         {
             var pedido = await _contexto.Pedidos.FindAsync(id);
 
@@ -190,6 +191,13 @@ namespace ControlViveresApp.Controllers
                 TempData["Mensaje"] = "Ese pedido ya estaba marcado como recibido";
                 TempData["Tipo"] = "info";
                 return RedirectToAction(nameof(Index));
+            }
+
+            // Si el pedido no traía fecha de vencimiento, se usa la que se escribió al recibirlo,
+            // para que el producto no entre al inventario "sin fecha".
+            if (pedido.FechaVencimiento is null && fechaVencimiento is not null)
+            {
+                pedido.FechaVencimiento = fechaVencimiento;
             }
 
             // Si ya existe ese artículo en el inventario (mismo nombre, misma unidad y
@@ -230,6 +238,7 @@ namespace ControlViveresApp.Controllers
 
             TempData["Mensaje"] = $"Pedido recibido. Se agregaron {pedido.Cantidad} {pedido.UnidadMedida} de {pedido.Articulo} al inventario.";
             TempData["Tipo"] = "success";
+            TempData["FilaNuevaId"] = pedido.Id;
             TempData["ComprobanteRecepcionId"] = pedido.Id;
 
             return RedirectToAction(nameof(Index));

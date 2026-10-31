@@ -34,6 +34,9 @@ namespace ControlViveresApp.Models
             "Sololá", "Suchitepéquez", "Totonicapán", "Zacapa"
         ];
 
+        /// <summary>Mismo listado de departamentos; nombre usado por Entregas Programadas.</summary>
+        public static string[] NombresDepartamentos => Departamentos;
+
         /// <summary>
         /// Municipios de cada departamento de Guatemala, usados por el desplegable en
         /// cascada de Departamento/Municipio en el módulo de Entregas Programadas.

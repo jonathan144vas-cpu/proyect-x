@@ -1,6 +1,7 @@
 @model IEnumerable<Alimento>
 
 @{
+    var filaNuevaId = TempData["FilaNuevaId"] as int?;
     ViewData["Title"] = "Inventario de Víveres";
 
     var hoy = DateOnly.FromDateTime(DateTime.Now);
@@ -25,7 +26,7 @@
 <div class="container-fluid">
     <div class="header-panel">
         <div>
-            <h2><i class="bi bi-basket"></i> Inventario de Víveres</h2>
+            <h2><i class="bi bi-basket"></i> Inventario de Víveres <small class="sub-parentesis">(Donaciones de personas)</small></h2>
             <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
                 Sesión actual: <strong>@User.Identity?.Name</strong>
                 @(esAdmin ? "(Administrador)" : "(Lector)")
@@ -34,7 +35,7 @@
 
         @if (esAdmin)
         {
-            <a asp-action="Crear" class="btn-nuevo">+ Agregar Alimento</a>
+            <a asp-action="Crear" class="btn-nuevo">+ Agregar Alimento <small>(Donaciones de personas)</small></a>
         }
     </div>
 
@@ -154,7 +155,7 @@
                             }
                         }
 
-                        <tr>
+                        <tr class="@(item.Id == filaNuevaId ? "fila-nueva" : "")">
                             <td data-label="Nombre"><strong>@item.Nombre</strong></td>
                             <td data-label="Categoría">@item.Categoria</td>
                             <td data-label="Cantidad">@item.Cantidad</td>
