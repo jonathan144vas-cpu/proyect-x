@@ -17,6 +17,9 @@ namespace ControlViveresApp.Models
         public int FamiliasPorAtender { get; set; }
         public int PedidosActivos { get; set; }
 
+        // Hora del servidor en que se calcularon los datos, para mostrar "actualizado a las..."
+        public string ActualizadoEn { get; set; } = string.Empty;
+
         // Gráficas de pastel
         public List<Punto> InventarioPorCategoria { get; set; } = [];
         public List<Punto> EstadoVencimiento { get; set; } = [];
@@ -28,6 +31,7 @@ namespace ControlViveresApp.Models
         // Gráficas de línea: un punto por mes ("yyyy-MM")
         public List<Punto> EntregasRealizadasPorMes { get; set; } = [];
         public List<Punto> EntregasProgramadasPorMes { get; set; } = [];
-        public List<Punto> IngresoInventarioPorMes { get; set; } = [];
+        public List<Punto> EntradasPorMes { get; set; } = [];
+        public List<Punto> SalidasPorMes { get; set; } = [];
     }
 }

@@ -7,8 +7,8 @@ namespace ControlViveresApp.Data
 {
     /// <summary>
     /// Contexto de Entity Framework Core contra PostgreSQL.
-    /// Incluye las tablas de Identity (usuarios y roles), el inventario de víveres
-    /// y los pedidos por realizar.
+    /// Incluye las tablas de Identity (usuarios y roles), el inventario de víveres,
+    /// los pedidos por realizar y los proveedores.
     /// </summary>
     public class ContextoViveres : IdentityDbContext<Usuario>
     {
@@ -19,6 +19,12 @@ namespace ControlViveresApp.Data
         public DbSet<Alimento> Alimentos => Set<Alimento>();
 
         public DbSet<Pedido> Pedidos => Set<Pedido>();
+
+        public DbSet<MovimientoInventario> MovimientosInventario => Set<MovimientoInventario>();
+
+        public DbSet<Proveedor> Proveedores => Set<Proveedor>();
+
+        public DbSet<NuevoProveedor> NuevosProveedores => Set<NuevoProveedor>();
 
         public DbSet<Entrega> Entregas => Set<Entrega>();
 
@@ -62,6 +68,29 @@ namespace ControlViveresApp.Data
 
                 pedido.HasIndex(p => p.Estado);
                 pedido.HasIndex(p => p.Categoria);
+
+                // Si se borra un proveedor, sus pedidos se quedan con el nombre guardado.
+                pedido.HasOne(p => p.ProveedorAsignado)
+                    .WithMany()
+                    .HasForeignKey(p => p.ProveedorId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            constructor.Entity<MovimientoInventario>(movimiento =>
+            {
+                movimiento.Property(m => m.Tipo).HasConversion<string>().HasMaxLength(20);
+                movimiento.HasIndex(m => m.Fecha);
+            });
+
+            constructor.Entity<Proveedor>(proveedor =>
+            {
+                proveedor.HasIndex(p => p.Categoria);
+                proveedor.HasIndex(p => new { p.Nombre, p.Categoria }).IsUnique();
+
+                proveedor.HasOne(p => p.Alta)
+                    .WithOne(a => a.Proveedor)
+                    .HasForeignKey<NuevoProveedor>(a => a.ProveedorId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             constructor.Entity<Entrega>(entrega =>

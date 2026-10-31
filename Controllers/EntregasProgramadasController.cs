@@ -234,6 +234,7 @@ namespace ControlViveresApp.Controllers
                     .ToListAsync();
 
                 var lotesVencidosSaltados = 0;
+                var restanteInicial = restante;
 
                 foreach (var lote in lotes)
                 {
@@ -248,6 +249,15 @@ namespace ControlViveresApp.Controllers
                     var aDescontar = Math.Min(lote.Cantidad, (int)restante);
                     lote.Cantidad -= aDescontar;
                     restante -= aDescontar;
+                }
+
+                // Solo sale lo que de verdad se descontó de bodega, no lo que faltó.
+                var entregado = (int)(restanteInicial - restante);
+                if (entregado > 0)
+                {
+                    _contexto.MovimientosInventario.Add(MovimientoInventario.Nuevo(
+                        TipoMovimiento.Salida, detalle.Producto.Trim(), lotes.FirstOrDefault()?.Categoria ?? "Otros",
+                        entregado, detalle.SistemaMedida, $"Entrega a {entrega.Lugar}", User.Identity?.Name));
                 }
 
                 if (lotesVencidosSaltados > 0)

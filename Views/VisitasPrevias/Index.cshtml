@@ -25,7 +25,7 @@
     <div class="header-panel">
         <div>
             <h2><i class="bi bi-clipboard-check"></i> Revisión Previa</h2>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
                 Visitas propuestas, pendientes de aprobar antes de programarlas
             </p>
         </div>
@@ -39,11 +39,11 @@
     <div class="tarjetas-resumen">
         <div class="tarjeta">
             <div class="tarjeta-etiqueta">Pendientes</div>
-            <div class="tarjeta-valor" style="color: #fbbf24;">@totalPendientes</div>
+            <div class="tarjeta-valor" style="color: var(--c-ambar);">@totalPendientes</div>
         </div>
         <div class="tarjeta">
             <div class="tarjeta-etiqueta">Aprobadas</div>
-            <div class="tarjeta-valor" style="color: #4ade80;">@totalAprobadas</div>
+            <div class="tarjeta-valor" style="color: var(--c-verde);">@totalAprobadas</div>
         </div>
     </div>
 
@@ -79,7 +79,7 @@
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="@totalColumnas" style="text-align: center; color: #94a3b8; padding: 2rem;">
+                        <td colspan="@totalColumnas" style="text-align: center; color: var(--text-muted); padding: 2rem;">
                             No hay visitas previas que coincidan con la búsqueda.
                         </td>
                     </tr>
@@ -177,7 +177,7 @@
                 var productos = JSON.parse(boton.dataset.productos || '[]');
 
                 var filas = productos.length === 0
-                    ? '<p style="color:#94a3b8;">No se registraron productos.</p>'
+                    ? '<p style="color:var(--text-muted);">No se registraron productos.</p>'
                     : '<ul style="text-align:left; margin:0; padding-left:1.1rem;">' +
                         productos.map(function (p) {
                             return '<li>' + p.Producto + ' &mdash; ' + p.Total + ' ' + p.SistemaMedida + '</li>';

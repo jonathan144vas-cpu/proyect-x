@@ -34,7 +34,7 @@
     <div class="header-panel">
         <div>
             <h2><i class="bi bi-cart-plus"></i> Pedidos por Realizar</h2>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
                 Lista de víveres que hacen falta comprar
             </p>
         </div>
@@ -48,15 +48,15 @@
     <div class="tarjetas-resumen">
         <div class="tarjeta">
             <div class="tarjeta-etiqueta">Pendientes</div>
-            <div class="tarjeta-valor" style="color: #fbbf24;">@pendientes</div>
+            <div class="tarjeta-valor" style="color: var(--c-ambar);">@pendientes</div>
         </div>
         <div class="tarjeta">
             <div class="tarjeta-etiqueta">Solicitados</div>
-            <div class="tarjeta-valor" style="color: #93c5fd;">@solicitados</div>
+            <div class="tarjeta-valor" style="color: var(--c-azul);">@solicitados</div>
         </div>
         <div class="tarjeta">
             <div class="tarjeta-etiqueta">Recibidos</div>
-            <div class="tarjeta-valor" style="color: #4ade80;">@recibidos</div>
+            <div class="tarjeta-valor" style="color: var(--c-verde);">@recibidos</div>
         </div>
     </div>
 
@@ -90,7 +90,7 @@
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="@totalColumnas" style="text-align: center; color: #94a3b8; padding: 2rem;">
+                        <td colspan="@totalColumnas" style="text-align: center; color: var(--text-muted); padding: 2rem;">
                             No hay pedidos que coincidan con la búsqueda.
                         </td>
                     </tr>
@@ -104,7 +104,7 @@
                                 <strong>@item.Articulo</strong>
                                 @if (!string.IsNullOrWhiteSpace(item.Proveedor))
                                 {
-                                    <div style="color: #64748b; font-size: 0.8rem;">@item.Proveedor</div>
+                                    <div style="color: var(--text-subtle); font-size: 0.8rem;">@item.Proveedor</div>
                                 }
                             </td>
                             <td data-label="Categoría">@item.Categoria</td>

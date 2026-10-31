@@ -20,12 +20,130 @@
     --text-muted: #94a3b8;
     --border: #334155;
     --ancho-menu: 260px;
+
+    /* Apoyos que cambian con el tema */
+    --text-subtle: #64748b;
+    --hover-suave: rgba(255, 255, 255, 0.04);
+    --hover-medio: rgba(255, 255, 255, 0.05);
+    --encab-tabla: rgba(255, 255, 255, 0.02);
+    --fila-borde: rgba(51, 65, 85, 0.6);
+    --sombra-s: rgba(0, 0, 0, 0.18);
+    --sombra-m: rgba(0, 0, 0, 0.32);
+    --sombra-l: rgba(0, 0, 0, 0.5);
+
+    /* Colores de texto/ícono para estados (más claros en oscuro, más fuertes en claro) */
+    --c-verde: #4ade80;
+    --c-ambar: #fbbf24;
+    --c-rojo: #f87171;
+    --c-rojo-suave: #fca5a5;
+    --c-azul: #93c5fd;
+    --c-celeste: #38bdf8;
+    --c-morado: #c4b5fd;
+
+    color-scheme: dark;
+}
+
+/* ===== TEMA CLARO ===== */
+:root[data-tema="claro"] {
+    --bg-dark: #f1f5f9;
+    --bg-card: #ffffff;
+    --bg-input: #f1f5f9;
+    --bg-sidebar: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #475569;
+    --border: #e2e8f0;
+
+    --text-subtle: #64748b;
+    --hover-suave: rgba(15, 23, 42, 0.05);
+    --hover-medio: rgba(15, 23, 42, 0.06);
+    --encab-tabla: rgba(15, 23, 42, 0.03);
+    --fila-borde: rgba(148, 163, 184, 0.35);
+    --sombra-s: rgba(15, 23, 42, 0.08);
+    --sombra-m: rgba(15, 23, 42, 0.14);
+    --sombra-l: rgba(15, 23, 42, 0.22);
+
+    --c-verde: #15803d;
+    --c-ambar: #b45309;
+    --c-rojo: #b91c1c;
+    --c-rojo-suave: #b91c1c;
+    --c-azul: #1d4ed8;
+    --c-celeste: #0369a1;
+    --c-morado: #6d28d9;
+
+    color-scheme: only light;
 }
 
 body {
     background-color: var(--bg-dark);
     color: var(--text-main);
     min-height: 100vh;
+}
+
+/* Cambio de tema suave (solo después de que la página ya cargó) */
+html.tema-animado body,
+html.tema-animado .sidebar,
+html.tema-animado .topbar,
+html.tema-animado .tarjeta,
+html.tema-animado .grafica-card,
+html.tema-animado .tabla-responsive,
+html.tema-animado .form-card,
+html.tema-animado .form-control {
+    transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+/* Botón para cambiar entre modo claro y oscuro (arriba a la derecha) */
+.btn-tema {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.4rem 0.8rem;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+}
+
+.btn-tema:hover {
+    border-color: var(--primary);
+    background-color: var(--hover-suave);
+}
+
+.btn-tema:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+.btn-tema i {
+    font-size: 1rem;
+    color: var(--c-ambar);
+}
+
+/* En modo oscuro se muestra la luna; en modo claro, el sol */
+.btn-tema .icono-sol { display: none; }
+:root[data-tema="claro"] .btn-tema .icono-sol { display: inline; }
+:root[data-tema="claro"] .btn-tema .icono-luna { display: none; }
+:root:not([data-tema="claro"]) .btn-tema i { color: var(--c-azul); }
+
+@media (max-width: 480px) {
+    .btn-tema .texto-tema { display: none; }
+    .btn-tema { padding: 0.45rem 0.65rem; }
+}
+
+/* Ventanas de SweetAlert siguen el tema aunque cada llamada fije colores oscuros */
+.swal2-popup {
+    background: var(--bg-card) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border);
+}
+
+.swal2-title,
+.swal2-html-container {
+    color: var(--text-main) !important;
 }
 
 /* =========================================================
@@ -64,6 +182,46 @@ body {
     color: var(--primary);
 }
 
+/* Botón junto al logo: vuelve a la pantalla de inicio con los cuadros de cada sección */
+.btn-inicio {
+    margin-left: auto;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    background-color: rgba(59, 130, 246, 0.14);
+    border: 1px solid rgba(59, 130, 246, 0.35);
+    text-decoration: none;
+    transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-inicio i {
+    font-size: 1rem;
+    color: var(--primary);
+    transition: transform 0.25s, color 0.2s;
+}
+
+.btn-inicio:hover,
+.btn-inicio.activo {
+    background-color: var(--primary);
+    box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+}
+
+.btn-inicio:hover {
+    transform: translateY(-2px);
+}
+
+.btn-inicio:hover i,
+.btn-inicio.activo i {
+    color: #fff;
+}
+
+.btn-inicio:hover i {
+    transform: scale(1.12) rotate(-6deg);
+}
+
 .sidebar-nav {
     flex: 1;
     padding: 1.25rem 0.75rem;
@@ -75,7 +233,7 @@ body {
     font-weight: 700;
     letter-spacing: 0.09em;
     text-transform: uppercase;
-    color: #64748b;
+    color: var(--text-subtle);
     padding: 0 0.75rem;
     margin-bottom: 0.6rem;
 }
@@ -100,7 +258,7 @@ body {
 }
 
 .sidebar-link:hover {
-    background-color: rgba(255, 255, 255, 0.04);
+    background-color: var(--hover-suave);
     color: var(--text-main);
 }
 
@@ -174,7 +332,7 @@ body {
 
 .btn-salir:hover {
     border-color: var(--danger);
-    color: #fca5a5;
+    color: var(--c-rojo-suave);
 }
 
 /* Fondo oscuro detrás del menú en celular */
@@ -205,7 +363,7 @@ body {
     padding: 0.9rem 1.5rem;
     background-color: var(--bg-card);
     border-bottom: 1px solid var(--border);
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.18);
+    box-shadow: 0 2px 12px var(--sombra-s);
     position: sticky;
     top: 0;
     z-index: 30;
@@ -447,11 +605,11 @@ body {
     white-space: nowrap;
 }
 
-.etiqueta-gris   { background-color: rgba(148, 163, 184, 0.14); color: #94a3b8; }
-.etiqueta-verde  { background-color: rgba(16, 185, 129, 0.2);   color: #4ade80; }
-.etiqueta-ambar  { background-color: rgba(245, 158, 11, 0.2);   color: #fbbf24; }
-.etiqueta-roja   { background-color: rgba(239, 68, 68, 0.2);    color: #f87171; }
-.etiqueta-azul   { background-color: rgba(59, 130, 246, 0.2);   color: #93c5fd; }
+.etiqueta-gris   { background-color: rgba(148, 163, 184, 0.14); color: var(--text-muted); }
+.etiqueta-verde  { background-color: rgba(16, 185, 129, 0.2);   color: var(--c-verde); }
+.etiqueta-ambar  { background-color: rgba(245, 158, 11, 0.2);   color: var(--c-ambar); }
+.etiqueta-roja   { background-color: rgba(239, 68, 68, 0.2);    color: var(--c-rojo); }
+.etiqueta-azul   { background-color: rgba(59, 130, 246, 0.2);   color: var(--c-azul); }
 
 /* Barra de Filtros y Búsqueda */
 .filtros {
@@ -500,7 +658,7 @@ body {
 }
 
 .tabla-viveres th {
-    background-color: rgba(255, 255, 255, 0.02);
+    background-color: var(--encab-tabla);
     padding: 1rem;
     font-size: 0.85rem;
     text-transform: uppercase;
@@ -625,7 +783,7 @@ textarea.form-control {
     max-width: 920px;
     border-radius: 20px;
     overflow: hidden;
-    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 30px 70px var(--sombra-l);
 }
 
 /* Panel de marca: un bloque de color sólido con textura de puntos,
@@ -767,7 +925,7 @@ textarea.form-control {
 .login-error {
     background-color: rgba(239, 68, 68, 0.15);
     border: 1px solid var(--danger);
-    color: #fca5a5;
+    color: var(--c-rojo-suave);
     border-radius: 8px;
     font-size: 0.85rem;
     text-align: center;
@@ -802,7 +960,7 @@ textarea.form-control {
     padding-top: 1rem;
     border-top: 1px solid var(--border);
     font-size: 0.85rem;
-    color: #64748b;
+    color: var(--text-subtle);
     text-align: center;
 }
 
@@ -898,7 +1056,7 @@ textarea.form-control {
 .acceso-card:hover {
     transform: translateY(-4px);
     border-color: rgba(59, 130, 246, 0.55);
-    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 14px 30px var(--sombra-m);
 }
 
 .acceso-icono {
@@ -912,12 +1070,12 @@ textarea.form-control {
     margin-bottom: 0.9rem;
 }
 
-.acceso-icono-verde   { background: rgba(74, 222, 128, 0.14);  color: #4ade80; }
-.acceso-icono-celeste { background: rgba(56, 189, 248, 0.14);  color: #38bdf8; }
-.acceso-icono-ambar   { background: rgba(251, 191, 36, 0.14);  color: #fbbf24; }
-.acceso-icono-morado  { background: rgba(196, 181, 253, 0.14); color: #c4b5fd; }
-.acceso-icono-azul    { background: rgba(147, 197, 253, 0.14); color: #93c5fd; }
-.acceso-icono-rojo    { background: rgba(248, 113, 113, 0.14); color: #f87171; }
+.acceso-icono-verde   { background: rgba(74, 222, 128, 0.14);  color: var(--c-verde); }
+.acceso-icono-celeste { background: rgba(56, 189, 248, 0.14);  color: var(--c-celeste); }
+.acceso-icono-ambar   { background: rgba(251, 191, 36, 0.14);  color: var(--c-ambar); }
+.acceso-icono-morado  { background: rgba(196, 181, 253, 0.14); color: var(--c-morado); }
+.acceso-icono-azul    { background: rgba(147, 197, 253, 0.14); color: var(--c-azul); }
+.acceso-icono-rojo    { background: rgba(248, 113, 113, 0.14); color: var(--c-rojo); }
 
 .acceso-card h3 {
     font-size: 1.05rem;
@@ -999,7 +1157,7 @@ textarea.form-control {
         border: 1px solid var(--border);
         border-radius: 8px;
         padding: 0.5rem;
-        background-color: rgba(255, 255, 255, 0.01);
+        background-color: var(--encab-tabla);
     }
 
     .tabla-viveres td {
@@ -1007,7 +1165,7 @@ textarea.form-control {
         justify-content: space-between;
         gap: 1rem;
         padding: 0.6rem 0.5rem;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid var(--hover-medio);
     }
 
     .tabla-viveres td::before {
@@ -1075,7 +1233,7 @@ textarea.form-control {
 .tarjeta:hover {
     transform: translateY(-3px);
     border-color: rgba(59, 130, 246, 0.55);
-    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.32);
+    box-shadow: 0 10px 26px var(--sombra-m);
 }
 
 /* Las filas de la tabla entran escalonadas */
@@ -1116,7 +1274,7 @@ textarea.form-control {
 .btn-nuevo:hover, .btn-guardar:hover, .btn-editar:hover,
 .btn-eliminar:hover, .btn-recibir:hover, .btn-advertencia:hover, .filtros button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 18px var(--sombra-m);
 }
 
 .btn-nuevo:active, .btn-guardar:active, .btn-editar:active,
@@ -1215,7 +1373,7 @@ textarea.form-control {
     color: var(--text-main);
 }
 
-.campania-etiqueta i { color: #f87171; }
+.campania-etiqueta i { color: var(--c-rojo); }
 
 .campania-destino {
     font-size: 0.82rem;
@@ -1289,7 +1447,7 @@ textarea.form-control {
 
 .campania-pie strong { color: var(--text-main); }
 
-.campania-lograda { color: #4ade80; font-weight: 600; }
+.campania-lograda { color: var(--c-verde); font-weight: 600; }
 
 /* Barra delgada de carga al cambiar de pantalla */
 #barraCarga {
@@ -1350,7 +1508,7 @@ input, select, textarea, button {
 @media (max-width: 768px) {
     .main-content { padding: 1rem; }
 
-    .sidebar { width: min(82vw, 300px); box-shadow: 8px 0 30px rgba(0, 0, 0, 0.5); }
+    .sidebar { width: min(82vw, 300px); box-shadow: 8px 0 30px var(--sombra-l); }
 
     .topbar { padding: 0.75rem 1rem; }
 
@@ -1388,7 +1546,7 @@ input, select, textarea, button {
         margin-bottom: 0.3rem;
     }
 
-    .tabla-viveres td:first-child::before { color: #64748b; }
+    .tabla-viveres td:first-child::before { color: var(--text-subtle); }
 
     .tabla-viveres td.acciones {
         display: grid;
@@ -1520,7 +1678,7 @@ input, select, textarea, button {
     gap: 0.55rem;
     padding: 0.32rem 0;
     font-size: 0.86rem;
-    border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+    border-bottom: 1px solid var(--fila-borde);
 }
 
 .leyenda li:last-child {
@@ -1536,11 +1694,13 @@ input, select, textarea, button {
 
 .leyenda-nombre {
     flex: 1;
+    min-width: 0;
     color: var(--text-main);
 }
 
 .leyenda-valor {
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .leyenda-valor small {
@@ -1677,8 +1837,9 @@ input, select, textarea, button {
     display: flex;
     flex-direction: column;
     gap: 0.15rem;
-    background-color: var(--bg-dark);
+    background-color: var(--bg-card);
     border: 1px solid var(--border);
+    box-shadow: 0 6px 18px var(--sombra-m);
     border-radius: 8px;
     padding: 0.55rem 0.75rem;
     font-size: 0.82rem;
@@ -1708,7 +1869,7 @@ input, select, textarea, button {
     gap: 1rem;
     padding: 0.3rem 0;
     font-size: 0.88rem;
-    border-bottom: 1px solid rgba(51, 65, 85, 0.6);
+    border-bottom: 1px solid var(--fila-borde);
 }
 
 .detalle-fila span {
@@ -1742,7 +1903,7 @@ input, select, textarea, button {
 
 .ranking-fila:hover,
 .ranking-fila.elegida {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: var(--hover-medio);
 }
 
 .ranking-pista {
@@ -1803,5 +1964,140 @@ input, select, textarea, button {
 
 /* Seis tarjetas de resumen caben en una sola fila en pantallas anchas */
 .tarjetas-seis {
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+/* Cuadro "Agregar proveedor" y avisos de los formularios */
+.texto-ayuda {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.dialogo-proveedor {
+    width: min(520px, calc(100vw - 1.5rem));
+    max-height: calc(100vh - 2rem);
+    margin: auto;
+    padding: 1.5rem;
+    background-color: var(--bg-card);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow-y: auto;
+}
+
+.dialogo-proveedor::backdrop {
+    background-color: rgba(2, 6, 23, 0.75);
+}
+
+.dialogo-proveedor h3 {
+    font-size: 1.15rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 480px) {
+    .dialogo-proveedor {
+        padding: 1.1rem;
+    }
+}
+
+/* Entrada suave (la misma de las demás pantallas) para Pobreza en Guatemala,
+   Visualización y Productos Separados */
+.mapa-controles { animation: aparecerArriba 0.45s 0.12s ease both; }
+.mapa-card      { animation: aparecerArriba 0.5s 0.18s ease both; }
+.mapa-lateral > .grafica-card:nth-child(1) { animation: aparecerArriba 0.5s 0.24s ease both; }
+.mapa-lateral > .grafica-card:nth-child(2) { animation: aparecerArriba 0.5s 0.30s ease both; }
+.fuente-datos   { animation: aparecerArriba 0.5s 0.36s ease both; }
+
+.graficas-grid > .grafica-card { animation: aparecerArriba 0.5s ease both; }
+.graficas-grid > .grafica-card:nth-child(1) { animation-delay: 0.12s; }
+.graficas-grid > .grafica-card:nth-child(2) { animation-delay: 0.2s; }
+.graficas-grid > .grafica-card:nth-child(3) { animation-delay: 0.28s; }
+.graficas-grid > .grafica-card:nth-child(n+4) { animation-delay: 0.34s; }
+
+.grid-productos > .tarjeta-producto { animation: aparecerArriba 0.45s ease backwards; }
+.grid-productos > .tarjeta-producto:nth-child(1) { animation-delay: 0.08s; }
+.grid-productos > .tarjeta-producto:nth-child(2) { animation-delay: 0.14s; }
+.grid-productos > .tarjeta-producto:nth-child(3) { animation-delay: 0.2s; }
+.grid-productos > .tarjeta-producto:nth-child(4) { animation-delay: 0.26s; }
+.grid-productos > .tarjeta-producto:nth-child(5) { animation-delay: 0.32s; }
+.grid-productos > .tarjeta-producto:nth-child(6) { animation-delay: 0.38s; }
+.grid-productos > .tarjeta-producto:nth-child(n+7) { animation-delay: 0.42s; }
+
+/* Aviso de "se actualiza sola" en Visualización */
+.estado-actualizacion {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}
+
+.estado-actualizacion strong {
+    color: var(--text-main);
+    font-weight: 600;
+}
+
+.estado-punto {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--success);
+    animation: latir 2s ease-in-out infinite;
+}
+
+.estado-punto.error {
+    background-color: var(--danger);
+}
+
+/* Si la tarjeta de una gráfica queda angosta, la dona va arriba y la leyenda debajo,
+   así los nombres y las cantidades nunca se encimen. */
+.grafica-card {
+    container-type: inline-size;
+}
+
+@container (max-width: 540px) {
+    .grafica-pastel {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .grafica-lienzo {
+        flex: none;
+        height: 180px;
+    }
+}
+
+/* Ajustes finos del tema claro */
+:root[data-tema="claro"] .ranking-pista {
+    background-color: rgba(148, 163, 184, 0.28);
+}
+
+:root[data-tema="claro"] .mapa-departamento {
+    stroke: #ffffff;
+}
+
+:root[data-tema="claro"] .tabla-responsive,
+:root[data-tema="claro"] .tarjeta,
+:root[data-tema="claro"] .grafica-card,
+:root[data-tema="claro"] .tarjeta-producto,
+:root[data-tema="claro"] .form-card {
+    box-shadow: 0 1px 3px var(--sombra-s);
+}
+
+:root[data-tema="claro"] .sidebar-link.activo,
+:root[data-tema="claro"] .btn-inicio {
+    color: var(--primary-hover);
+}
+
+/* Botón de tema en las pantallas sin menú (inicio de sesión, registro, bienvenida) */
+.btn-tema-flotante {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    margin-left: 0;
+    z-index: 50;
+    background-color: var(--bg-card);
+    box-shadow: 0 2px 10px var(--sombra-s);
 }

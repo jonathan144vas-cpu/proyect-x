@@ -52,8 +52,10 @@ namespace ControlViveresApp.Controllers
 
         // 2. CREAR (PANTALLA)
         [Authorize(Roles = "Admin")]
-        public IActionResult Crear(string? articulo, string? categoria, string? unidadMedida)
+        public async Task<IActionResult> Crear(string? articulo, string? categoria, string? unidadMedida)
         {
+            await CargarProveedoresAsync();
+
             // Los parámetros permiten llegar aquí desde el inventario con el formulario prellenado.
             return View(new Pedido
             {
@@ -68,12 +70,14 @@ namespace ControlViveresApp.Controllers
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Crear(
-            [Bind("Articulo,Categoria,Cantidad,UnidadMedida,Proveedor,FechaNecesaria,FechaVencimiento,Prioridad,Estado,Observaciones")] Pedido pedido)
+            [Bind("Articulo,Categoria,Cantidad,UnidadMedida,ProveedorId,FechaNecesaria,FechaVencimiento,Prioridad,Estado,Observaciones")] Pedido pedido)
         {
             ValidarCatalogos(pedido);
+            await ValidarProveedorAsync(pedido);
 
             if (!ModelState.IsValid)
             {
+                await CargarProveedoresAsync();
                 return View(pedido);
             }
 
@@ -105,6 +109,7 @@ namespace ControlViveresApp.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            await CargarProveedoresAsync();
             return View(pedido);
         }
 
@@ -114,14 +119,16 @@ namespace ControlViveresApp.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Editar(
             int id,
-            [Bind("Id,Articulo,Categoria,Cantidad,UnidadMedida,Proveedor,FechaNecesaria,FechaVencimiento,Prioridad,Estado,Observaciones")] Pedido pedido)
+            [Bind("Id,Articulo,Categoria,Cantidad,UnidadMedida,ProveedorId,FechaNecesaria,FechaVencimiento,Prioridad,Estado,Observaciones")] Pedido pedido)
         {
             if (id != pedido.Id) return NotFound();
 
             ValidarCatalogos(pedido);
+            await ValidarProveedorAsync(pedido);
 
             if (!ModelState.IsValid)
             {
+                await CargarProveedoresAsync();
                 return View(pedido);
             }
 
@@ -140,7 +147,15 @@ namespace ControlViveresApp.Controllers
             existente.Categoria = pedido.Categoria;
             existente.Cantidad = pedido.Cantidad;
             existente.UnidadMedida = pedido.UnidadMedida;
-            existente.Proveedor = pedido.Proveedor;
+
+            // Un pedido viejo puede tener solo el nombre del proveedor escrito a mano. Ese texto
+            // se respeta mientras no se elija uno de la lista (o se quite uno ya elegido).
+            if (pedido.ProveedorId is not null || existente.ProveedorId is not null)
+            {
+                existente.Proveedor = pedido.Proveedor;
+            }
+
+            existente.ProveedorId = pedido.ProveedorId;
             existente.FechaNecesaria = pedido.FechaNecesaria;
             existente.FechaVencimiento = pedido.FechaVencimiento;
             existente.Prioridad = pedido.Prioridad;
@@ -207,6 +222,10 @@ namespace ControlViveresApp.Controllers
 
             pedido.Estado = EstadoPedido.Recibido;
 
+            _contexto.MovimientosInventario.Add(MovimientoInventario.Nuevo(
+                TipoMovimiento.Entrada, pedido.Articulo.Trim(), pedido.Categoria, pedido.Cantidad,
+                pedido.UnidadMedida, $"Pedido #{pedido.Id}", User.Identity?.Name));
+
             await _contexto.SaveChangesAsync();
 
             TempData["Mensaje"] = $"Pedido recibido. Se agregaron {pedido.Cantidad} {pedido.UnidadMedida} de {pedido.Articulo} al inventario.";
@@ -252,6 +271,39 @@ namespace ControlViveresApp.Controllers
             TempData["Tipo"] = "success";
 
             return RedirectToAction(nameof(Index));
+        }
+
+        private async Task CargarProveedoresAsync()
+        {
+            ViewBag.Proveedores = await _contexto.Proveedores.AsNoTracking()
+                .OrderBy(p => p.Nombre)
+                .Select(p => new ProveedorOpcion(p.Id, p.Nombre, p.Categoria))
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Comprueba que el proveedor exista y sea del área del pedido, y copia su nombre
+        /// al pedido. Sin esto, alguien podría enviar el formulario con un proveedor de otra área.
+        /// </summary>
+        private async Task ValidarProveedorAsync(Pedido pedido)
+        {
+            pedido.Proveedor = null;
+
+            if (pedido.ProveedorId is null)
+            {
+                return;
+            }
+
+            var proveedor = await _contexto.Proveedores.AsNoTracking()
+                .FirstOrDefaultAsync(p => p.Id == pedido.ProveedorId);
+
+            if (proveedor is null || proveedor.Categoria != pedido.Categoria)
+            {
+                ModelState.AddModelError(nameof(Pedido.ProveedorId), "Elige un proveedor de la categoría seleccionada");
+                return;
+            }
+
+            pedido.Proveedor = proveedor.Nombre;
         }
 
         private void ValidarCatalogos(Pedido pedido)

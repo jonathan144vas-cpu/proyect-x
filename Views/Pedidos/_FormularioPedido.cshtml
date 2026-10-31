@@ -31,9 +31,16 @@
 </div>
 
 <div class="form-group">
-    <label asp-for="Proveedor"></label>
-    <input asp-for="Proveedor" class="form-control" placeholder="Opcional. Ej: Distribuidora El Sol" />
-    <span asp-validation-for="Proveedor" class="text-danger"></span>
+    <label asp-for="ProveedorId"></label>
+    @* Las opciones las arma proveedores-pedido.js según la categoría elegida. *@
+    <select asp-for="ProveedorId" class="form-control" data-elegido="@Model.ProveedorId" disabled>
+        <option value="">Primero elige una categoría</option>
+    </select>
+    <span asp-validation-for="ProveedorId" class="text-danger"></span>
+    @if (Model.ProveedorId is null && !string.IsNullOrWhiteSpace(Model.Proveedor))
+    {
+        <small class="texto-ayuda">Proveedor anterior: @Model.Proveedor. Elige uno de la lista para cambiarlo.</small>
+    }
 </div>
 
 <div class="form-group">

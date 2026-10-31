@@ -1,13 +1,26 @@
-// Gráficas de la pantalla "Visualización". Los datos llegan ya agrupados desde el
-// servidor en window.datosVisualizacion; aquí solo se dibujan.
+// Gráficas de la pantalla "Visualización". Los datos llegan ya agrupados desde el servidor
+// en window.datosVisualizacion; aquí solo se dibujan. Cada cierto tiempo se vuelven a pedir
+// al servidor y las gráficas se actualizan en su lugar, sin recargar la página.
 (function () {
-    var datos = window.datosVisualizacion;
-    if (!datos || typeof Chart === 'undefined') return;
+    var panel = document.getElementById('panelVisualizacion');
+    if (!window.datosVisualizacion || !panel || typeof Chart === 'undefined') return;
 
-    var TEXTO = '#94a3b8';
-    var TEXTO_FUERTE = '#f8fafc';
-    var SUPERFICIE = '#1e293b';
-    var REJILLA = 'rgba(148, 163, 184, 0.14)';
+    var INTERVALO = 30000; // milisegundos entre una actualización y la siguiente
+
+    // Colores de texto, fondo y rejilla: salen de las variables del tema activo.
+    var TEXTO, TEXTO_FUERTE, SUPERFICIE, REJILLA, FONDO_TIP, BORDE;
+    function leerTema() {
+        var estilo = getComputedStyle(document.documentElement);
+        function v(n) { return estilo.getPropertyValue(n).trim(); }
+        var claro = document.documentElement.getAttribute('data-tema') === 'claro';
+        TEXTO = v('--text-muted');
+        TEXTO_FUERTE = v('--text-main');
+        SUPERFICIE = v('--bg-card');
+        FONDO_TIP = v('--bg-card');
+        BORDE = v('--border');
+        REJILLA = claro ? 'rgba(100, 116, 139, 0.22)' : 'rgba(148, 163, 184, 0.14)';
+        Chart.defaults.color = TEXTO;
+    }
 
     // Colores categóricos en orden fijo (validados para fondo oscuro).
     var CATEGORICOS = ['#3987e5', '#d95926', '#199e70', '#c98500', '#d55181', '#9085e9'];
@@ -33,9 +46,10 @@
     };
 
     Chart.defaults.font.family = "'Inter', -apple-system, BlinkMacSystemFont, sans-serif";
-    Chart.defaults.color = TEXTO;
+    leerTema();
 
     var formato = new Intl.NumberFormat('es-GT');
+    var graficas = {}; // id del lienzo -> gráfica ya creada
 
     function colorDe(nombre, indice) {
         return COLOR_POR_NOMBRE[nombre] || CATEGORICOS[indice % CATEGORICOS.length];
@@ -48,6 +62,30 @@
         return conAnio ? mes + ' ' + String(fecha.getFullYear()).slice(2) : mes;
     }
 
+    function itemDeLeyenda(color, nombre, valor, porcentaje) {
+        var item = document.createElement('li');
+
+        var muestra = document.createElement('span');
+        muestra.className = 'leyenda-color';
+        muestra.style.background = color;
+
+        var etiqueta = document.createElement('span');
+        etiqueta.className = 'leyenda-nombre';
+        etiqueta.textContent = nombre;
+
+        var cantidad = document.createElement('span');
+        cantidad.className = 'leyenda-valor';
+        cantidad.textContent = formato.format(valor) + ' ';
+        var pequeno = document.createElement('small');
+        pequeno.textContent = porcentaje + '%';
+        cantidad.appendChild(pequeno);
+
+        item.appendChild(muestra);
+        item.appendChild(etiqueta);
+        item.appendChild(cantidad);
+        return item;
+    }
+
     // Pastel en forma de dona + leyenda en HTML con cantidad y porcentaje,
     // que además sirve como la tabla de datos de la gráfica.
     function dibujarPastel(idLienzo, idLeyenda, puntos) {
@@ -56,55 +94,72 @@
         if (!lienzo || !leyenda) return;
 
         var total = puntos.reduce(function (suma, p) { return suma + p.valor; }, 0);
+        leyenda.innerHTML = '';
 
         if (puntos.length === 0 || total === 0) {
+            lienzo.style.display = 'none';
             lienzo.parentElement.classList.add('grafica-vacia');
-            lienzo.remove();
-            leyenda.innerHTML = '<li class="leyenda-vacia">Todavía no hay datos para mostrar.</li>';
+            var vacio = document.createElement('li');
+            vacio.className = 'leyenda-vacia';
+            vacio.textContent = 'Todavía no hay datos para mostrar.';
+            leyenda.appendChild(vacio);
             return;
         }
 
-        var colores = puntos.map(function (p, i) { return colorDe(p.etiqueta, i); });
+        lienzo.style.display = 'block';
+        lienzo.parentElement.classList.remove('grafica-vacia');
 
-        new Chart(lienzo, {
-            type: 'doughnut',
-            data: {
-                labels: puntos.map(function (p) { return p.etiqueta; }),
-                datasets: [{
-                    data: puntos.map(function (p) { return p.valor; }),
-                    backgroundColor: colores,
-                    borderColor: SUPERFICIE,
-                    borderWidth: 2,
-                    hoverOffset: 6
-                }]
-            },
-            options: {
-                cutout: '62%',
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: '#0f172a',
-                        borderColor: '#334155',
-                        borderWidth: 1,
-                        padding: 10,
-                        callbacks: {
-                            label: function (contexto) {
-                                var porcentaje = Math.round(contexto.parsed * 100 / total);
-                                return ' ' + formato.format(contexto.parsed) + ' (' + porcentaje + '%)';
+        var colores = puntos.map(function (p, i) { return colorDe(p.etiqueta, i); });
+        var etiquetas = puntos.map(function (p) { return p.etiqueta; });
+        var valores = puntos.map(function (p) { return p.valor; });
+
+        var existente = graficas[idLienzo];
+        if (existente) {
+            existente.data.labels = etiquetas;
+            existente.data.datasets[0].data = valores;
+            existente.data.datasets[0].backgroundColor = colores;
+            existente.update();
+        } else {
+            graficas[idLienzo] = new Chart(lienzo, {
+                type: 'doughnut',
+                data: {
+                    labels: etiquetas,
+                    datasets: [{
+                        data: valores,
+                        backgroundColor: colores,
+                        borderColor: SUPERFICIE,
+                        borderWidth: 2,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    cutout: '62%',
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: FONDO_TIP,
+                            borderColor: BORDE,
+                            titleColor: TEXTO_FUERTE,
+                            bodyColor: TEXTO_FUERTE,
+                            borderWidth: 1,
+                            padding: 10,
+                            callbacks: {
+                                label: function (contexto) {
+                                    var suma = contexto.dataset.data.reduce(function (a, b) { return a + b; }, 0);
+                                    var porcentaje = Math.round(contexto.parsed * 100 / suma);
+                                    return ' ' + formato.format(contexto.parsed) + ' (' + porcentaje + '%)';
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
 
-        leyenda.innerHTML = puntos.map(function (p, i) {
-            var porcentaje = Math.round(p.valor * 100 / total);
-            return '<li><span class="leyenda-color" style="background:' + colores[i] + '"></span>' +
-                '<span class="leyenda-nombre">' + p.etiqueta + '</span>' +
-                '<span class="leyenda-valor">' + formato.format(p.valor) + ' <small>' + porcentaje + '%</small></span></li>';
-        }).join('');
+        puntos.forEach(function (p, i) {
+            leyenda.appendChild(itemDeLeyenda(colores[i], p.etiqueta, p.valor, Math.round(p.valor * 100 / total)));
+        });
     }
 
     function dibujarLineas(idLienzo, series) {
@@ -112,11 +167,23 @@
         if (!lienzo) return;
 
         var meses = series[0].puntos.map(function (p) { return p.etiqueta; });
+        var etiquetas = meses.map(function (m) { return nombreDeMes(m, false); });
 
-        new Chart(lienzo, {
+        var existente = graficas[idLienzo];
+        if (existente) {
+            existente.$meses = meses;
+            existente.data.labels = etiquetas;
+            series.forEach(function (serie, i) {
+                existente.data.datasets[i].data = serie.puntos.map(function (p) { return p.valor; });
+            });
+            existente.update();
+            return;
+        }
+
+        var grafica = new Chart(lienzo, {
             type: 'line',
             data: {
-                labels: meses.map(function (m) { return nombreDeMes(m, false); }),
+                labels: etiquetas,
                 datasets: series.map(function (serie, i) {
                     return {
                         label: serie.nombre,
@@ -136,7 +203,7 @@
                 maintainAspectRatio: false,
                 interaction: { mode: 'index', intersect: false },
                 scales: {
-                    x: { grid: { display: false }, border: { color: '#334155' } },
+                    x: { grid: { display: false }, border: { color: BORDE } },
                     y: {
                         beginAtZero: true,
                         grid: { color: REJILLA },
@@ -151,12 +218,14 @@
                         labels: { usePointStyle: true, boxWidth: 8, boxHeight: 8, color: TEXTO_FUERTE }
                     },
                     tooltip: {
-                        backgroundColor: '#0f172a',
-                        borderColor: '#334155',
+                        backgroundColor: FONDO_TIP,
+                        borderColor: BORDE,
+                        titleColor: TEXTO_FUERTE,
+                        bodyColor: TEXTO_FUERTE,
                         borderWidth: 1,
                         padding: 10,
                         callbacks: {
-                            title: function (items) { return nombreDeMes(meses[items[0].dataIndex], true); },
+                            title: function (items) { return nombreDeMes(grafica.$meses[items[0].dataIndex], true); },
                             label: function (contexto) {
                                 return ' ' + contexto.dataset.label + ': ' + formato.format(contexto.parsed.y);
                             }
@@ -165,20 +234,79 @@
                 }
             }
         });
+
+        grafica.$meses = meses;
+        graficas[idLienzo] = grafica;
     }
 
-    dibujarPastel('graficaCategorias', 'leyendaCategorias', datos.inventarioPorCategoria);
-    dibujarPastel('graficaVencimiento', 'leyendaVencimiento', datos.estadoVencimiento);
-    dibujarPastel('graficaEnvios', 'leyendaEnvios', datos.enviosPorEstado);
-    dibujarPastel('graficaDepartamentos', 'leyendaDepartamentos', datos.enviosPendientesPorDepartamento);
-    dibujarPastel('graficaPedidos', 'leyendaPedidos', datos.pedidosPorEstado);
-    dibujarPastel('graficaPrioridad', 'leyendaPrioridad', datos.pedidosActivosPorPrioridad);
+    function mostrarTarjetas(datos) {
+        document.querySelectorAll('[data-kpi]').forEach(function (tarjeta) {
+            var valor = datos[tarjeta.dataset.kpi];
+            if (valor !== undefined) tarjeta.textContent = formato.format(valor);
+        });
+        document.getElementById('ultimaActualizacion').textContent = datos.actualizadoEn;
+    }
 
-    dibujarLineas('graficaEntregasMes', [
-        { nombre: 'Realizadas', puntos: datos.entregasRealizadasPorMes },
-        { nombre: 'Programadas', puntos: datos.entregasProgramadasPorMes }
-    ]);
-    dibujarLineas('graficaIngresoMes', [
-        { nombre: 'Unidades que ingresaron', puntos: datos.ingresoInventarioPorMes }
-    ]);
+    var ultimosDatos = null;
+
+    function aplicar(datos) {
+        ultimosDatos = datos;
+        mostrarTarjetas(datos);
+
+        dibujarPastel('graficaCategorias', 'leyendaCategorias', datos.inventarioPorCategoria);
+        dibujarPastel('graficaVencimiento', 'leyendaVencimiento', datos.estadoVencimiento);
+        dibujarPastel('graficaEnvios', 'leyendaEnvios', datos.enviosPorEstado);
+        dibujarPastel('graficaDepartamentos', 'leyendaDepartamentos', datos.enviosPendientesPorDepartamento);
+        dibujarPastel('graficaPedidos', 'leyendaPedidos', datos.pedidosPorEstado);
+        dibujarPastel('graficaPrioridad', 'leyendaPrioridad', datos.pedidosActivosPorPrioridad);
+
+        dibujarLineas('graficaEntregasMes', [
+            { nombre: 'Realizadas', puntos: datos.entregasRealizadasPorMes },
+            { nombre: 'Programadas', puntos: datos.entregasProgramadasPorMes }
+        ]);
+        dibujarLineas('graficaMovimientoMes', [
+            { nombre: 'Entradas', puntos: datos.entradasPorMes },
+            { nombre: 'Salidas', puntos: datos.salidasPorMes }
+        ]);
+    }
+
+    // ---------- Actualización automática ----------
+
+    var punto = document.getElementById('puntoActualizacion');
+    var pidiendo = false;
+
+    function actualizar() {
+        if (pidiendo || document.hidden) return;
+        pidiendo = true;
+
+        fetch(panel.dataset.url, { credentials: 'same-origin', cache: 'no-store', headers: { 'Accept': 'application/json' } })
+            .then(function (respuesta) {
+                if (!respuesta.ok) throw new Error('respuesta ' + respuesta.status);
+                return respuesta.json();
+            })
+            .then(function (datos) {
+                aplicar(datos);
+                punto.classList.remove('error');
+            })
+            .catch(function () {
+                // Sesión vencida o sin conexión: se deja lo que ya se ve y se avisa con el punto rojo.
+                punto.classList.add('error');
+            })
+            .then(function () { pidiendo = false; });
+    }
+
+    aplicar(window.datosVisualizacion);
+
+    // Al cambiar de tema se vuelven a crear las gráficas con los colores nuevos.
+    document.addEventListener('tema-cambiado', function () {
+        Object.keys(graficas).forEach(function (id) { graficas[id].destroy(); });
+        graficas = {};
+        leerTema();
+        if (ultimosDatos) aplicar(ultimosDatos);
+    });
+
+    setInterval(actualizar, INTERVALO);
+    document.addEventListener('visibilitychange', function () {
+        if (!document.hidden) actualizar();
+    });
 })();

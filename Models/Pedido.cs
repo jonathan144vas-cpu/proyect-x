@@ -45,8 +45,13 @@ namespace ControlViveresApp.Models
         [Display(Name = "Unidad de medida")]
         public string UnidadMedida { get; set; } = string.Empty;
 
-        [StringLength(100, ErrorMessage = "El proveedor no puede pasar de 100 caracteres")]
+        // Proveedor elegido de la lista. Aparte se guarda su nombre como texto, para que el
+        // comprobante y el historial se sigan leyendo bien aunque el proveedor cambie o se borre.
         [Display(Name = "Proveedor")]
+        public int? ProveedorId { get; set; }
+        public Proveedor? ProveedorAsignado { get; set; }
+
+        [StringLength(100, ErrorMessage = "El proveedor no puede pasar de 100 caracteres")]
         public string? Proveedor { get; set; }
 
         [DataType(DataType.Date)]

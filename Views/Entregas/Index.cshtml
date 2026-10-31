@@ -21,7 +21,7 @@
     <div class="header-panel">
         <div>
             <h2><i class="bi bi-gift-fill"></i> Donaciones Entregadas</h2>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin-top: 0.25rem;">
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.25rem;">
                 Historial de comunidades de Guatemala donde ya se entregaron víveres (solo lectura)
             </p>
         </div>
@@ -34,15 +34,15 @@
         </div>
         <div class="tarjeta">
             <div class="tarjeta-etiqueta">Departamentos</div>
-            <div class="tarjeta-valor" style="color: #93c5fd;">@totalDepartamentos</div>
+            <div class="tarjeta-valor" style="color: var(--c-azul);">@totalDepartamentos</div>
         </div>
         <div class="tarjeta">
             <div class="tarjeta-etiqueta">Familias beneficiadas</div>
-            <div class="tarjeta-valor" style="color: #4ade80;">@totalFamilias</div>
+            <div class="tarjeta-valor" style="color: var(--c-verde);">@totalFamilias</div>
         </div>
         <div class="tarjeta">
             <div class="tarjeta-etiqueta">Víveres entregados</div>
-            <div class="tarjeta-valor" style="color: #fbbf24;">@totalEntregado</div>
+            <div class="tarjeta-valor" style="color: var(--c-ambar);">@totalEntregado</div>
         </div>
     </div>
 
@@ -71,7 +71,7 @@
                 @if (!Model.Any())
                 {
                     <tr>
-                        <td colspan="@totalColumnas" style="text-align: center; color: #94a3b8; padding: 2rem;">
+                        <td colspan="@totalColumnas" style="text-align: center; color: var(--text-muted); padding: 2rem;">
                             No hay entregas que coincidan con la búsqueda.
                         </td>
                     </tr>
@@ -85,7 +85,7 @@
                                 <strong>@item.Lugar</strong>
                                 @if (!string.IsNullOrWhiteSpace(item.Municipio))
                                 {
-                                    <div style="color: #64748b; font-size: 0.8rem;">@item.Municipio</div>
+                                    <div style="color: var(--text-subtle); font-size: 0.8rem;">@item.Municipio</div>
                                 }
                             </td>
                             <td data-label="Departamento">@item.Departamento</td>
@@ -95,7 +95,7 @@
                             <td data-label="Productos entregados">
                                 @if (item.Detalles.Count == 0)
                                 {
-                                    <span style="color: #64748b;">Sin detalle</span>
+                                    <span style="color: var(--text-subtle);">Sin detalle</span>
                                 }
                                 else
                                 {
@@ -111,7 +111,7 @@
                                 }
                                 else
                                 {
-                                    <span style="color: #64748b;">N/A</span>
+                                    <span style="color: var(--text-subtle);">N/A</span>
                                 }
                             </td>
                         </tr>

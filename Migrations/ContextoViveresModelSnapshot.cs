@@ -269,6 +269,87 @@ namespace ControlViveresApp.Migrations
                     b.ToTable("EntregasProgramadas");
                 });
 
+            modelBuilder.Entity("ControlViveresApp.Models.MovimientoInventario", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Cantidad")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Categoria")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Origen")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<string>("Producto")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("RegistradoPor")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("UnidadMedida")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Fecha");
+
+                    b.ToTable("MovimientosInventario");
+                });
+
+            modelBuilder.Entity("ControlViveresApp.Models.NuevoProveedor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Origen")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)");
+
+                    b.Property<int>("ProveedorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RegistradoPor")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProveedorId")
+                        .IsUnique();
+
+                    b.ToTable("NuevosProveedores");
+                });
+
             modelBuilder.Entity("ControlViveresApp.Models.Pedido", b =>
                 {
                     b.Property<int>("Id")
@@ -317,6 +398,9 @@ namespace ControlViveresApp.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<int?>("ProveedorId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("SolicitadoPor")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
@@ -332,7 +416,60 @@ namespace ControlViveresApp.Migrations
 
                     b.HasIndex("Estado");
 
+                    b.HasIndex("ProveedorId");
+
                     b.ToTable("Pedidos");
+                });
+
+            modelBuilder.Entity("ControlViveresApp.Models.Proveedor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AsesorEncargado")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Categoria")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Correo")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Direccion")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(400)
+                        .HasColumnType("character varying(400)");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Categoria");
+
+                    b.HasIndex("Nombre", "Categoria")
+                        .IsUnique();
+
+                    b.ToTable("Proveedores");
                 });
 
             modelBuilder.Entity("ControlViveresApp.Models.Usuario", b =>
@@ -639,6 +776,27 @@ namespace ControlViveresApp.Migrations
                     b.Navigation("EntregaProgramadaOrigen");
                 });
 
+            modelBuilder.Entity("ControlViveresApp.Models.NuevoProveedor", b =>
+                {
+                    b.HasOne("ControlViveresApp.Models.Proveedor", "Proveedor")
+                        .WithOne("Alta")
+                        .HasForeignKey("ControlViveresApp.Models.NuevoProveedor", "ProveedorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Proveedor");
+                });
+
+            modelBuilder.Entity("ControlViveresApp.Models.Pedido", b =>
+                {
+                    b.HasOne("ControlViveresApp.Models.Proveedor", "ProveedorAsignado")
+                        .WithMany()
+                        .HasForeignKey("ProveedorId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("ProveedorAsignado");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -698,6 +856,11 @@ namespace ControlViveresApp.Migrations
             modelBuilder.Entity("ControlViveresApp.Models.EntregaProgramada", b =>
                 {
                     b.Navigation("Detalles");
+                });
+
+            modelBuilder.Entity("ControlViveresApp.Models.Proveedor", b =>
+                {
+                    b.Navigation("Alta");
                 });
 
             modelBuilder.Entity("ControlViveresApp.Models.VisitaPrevia", b =>

@@ -55,8 +55,9 @@ namespace ControlViveresApp.Data
                 contrasena: "Lector123*",
                 rol: "Usuario");
 
-            // 4. Sembrar los datos de demostración (inventario, pedidos e historial).
+            // 4. Sembrar los datos de demostración (inventario, proveedores, pedidos e historial).
             await SembrarAlimentosAsync(contexto, registrador);
+            await SembrarProveedoresAsync(contexto, registrador);
             await SembrarPedidosAsync(contexto, registrador);
             await SembrarEntregasAsync(contexto, registrador);
             await SembrarEntregasProgramadasAsync(contexto, registrador);
@@ -152,8 +153,58 @@ namespace ControlViveresApp.Data
             ("Pasta Dental", "Otros", "Unidades", true),
             ("Cepillo Dental", "Otros", "Unidades", true),
             ("Toallas Sanitarias", "Otros", "Bolsas", true),
-            ("Pañales", "Otros", "Bolsas", true)
+            ("Pañales", "Otros", "Bolsas", true),
+
+            ("Garbanzos", "Granos", "Libras", false),
+            ("Frijol Blanco", "Granos", "Libras", false),
+            ("Arroz Integral", "Granos", "Libras", false),
+            ("Cereal de Maíz", "Granos", "Bolsas", false),
+            ("Galletas Integrales", "Granos", "Bolsas", false),
+            ("Pan de Caja", "Granos", "Bolsas", false),
+            ("Pasta Corta", "Granos", "Libras", false),
+            ("Queso Seco", "Lácteos", "Libras", false),
+            ("Leche Descremada", "Lácteos", "Litros", false),
+            ("Leche de Soya", "Lácteos", "Litros", false),
+            ("Requesón", "Lácteos", "Libras", false),
+            ("Leche Evaporada", "Lácteos", "Unidades", false),
+            ("Sopa Enlatada", "Enlatados", "Unidades", false),
+            ("Salsa de Tomate", "Enlatados", "Unidades", false),
+            ("Garbanzos Enlatados", "Enlatados", "Unidades", false),
+            ("Champiñones Enlatados", "Enlatados", "Unidades", false),
+            ("Piña Enlatada", "Enlatados", "Unidades", false),
+            ("Jamón Enlatado", "Enlatados", "Unidades", false),
+            ("Papaya", "Frutas y Verduras", "Libras", false),
+            ("Piña", "Frutas y Verduras", "Unidades", false),
+            ("Limón", "Frutas y Verduras", "Libras", false),
+            ("Mango", "Frutas y Verduras", "Libras", false),
+            ("Pepino", "Frutas y Verduras", "Libras", false),
+            ("Brócoli", "Frutas y Verduras", "Libras", false),
+            ("Lechuga", "Frutas y Verduras", "Unidades", false),
+            ("Ajo", "Frutas y Verduras", "Libras", false),
+            ("Chile Pimiento", "Frutas y Verduras", "Libras", false),
+            ("Ejote", "Frutas y Verduras", "Libras", false),
+            ("Chorizo", "Carnes", "Libras", false),
+            ("Pechuga de Pollo", "Carnes", "Libras", false),
+            ("Carne Molida", "Carnes", "Libras", false),
+            ("Costillas de Cerdo", "Carnes", "Libras", false),
+            ("Camarón", "Carnes", "Libras", false),
+            ("Miel de Abeja", "Otros", "Unidades", true),
+            ("Mermelada", "Otros", "Unidades", true),
+            ("Consomé en Polvo", "Otros", "Bolsas", true),
+            ("Detergente en Polvo", "Otros", "Bolsas", true),
+            ("Jabón de Lavar", "Otros", "Unidades", true),
+            ("Cloro", "Otros", "Litros", true),
+            ("Shampoo", "Otros", "Unidades", true)
         ];
+
+        // Cuántos días de vida útil tiene un lote nuevo, según el tipo de producto.
+        private static (int Minimo, int Maximo) DiasDeVida(string categoria) => categoria switch
+        {
+            "Frutas y Verduras" => (4, 21),
+            "Carnes" => (5, 30),
+            "Lácteos" => (8, 60),
+            _ => (90, 540)
+        };
 
         private static async Task SembrarAlimentosAsync(ContextoViveres contexto, ILogger registrador)
         {
@@ -172,17 +223,16 @@ namespace ControlViveresApp.Data
                     continue;
                 }
 
-                // Cantidades entre 500 y 1900: con los 50 productos suman aprox. la mitad
-                // de la meta de la campaña, para que la barra de progreso se vea llena.
-                var cantidad = Aleatorio.Next(500, 1900);
+                // Cantidades entre 300 y 1500 por producto.
+                var cantidad = Aleatorio.Next(300, 1500);
 
                 DateOnly? vencimiento = null;
                 if (!producto.NoPerecedero)
                 {
-                    // Entre -15 (ya vencido) y +180 días (buen estado), con variedad
-                    // suficiente para que existan artículos vencidos, por vencer y en buen estado.
-                    var diasOffset = Aleatorio.Next(-15, 181);
-                    vencimiento = DateOnly.FromDateTime(DateTime.Now.AddDays(diasOffset));
+                    // Lotes recién llegados: la vida útil depende del tipo de producto, así
+                    // que los frescos quedan pronto por vencer y los secos duran meses.
+                    var (minimo, maximo) = DiasDeVida(producto.Categoria);
+                    vencimiento = DateOnly.FromDateTime(DateTime.Now.AddDays(Aleatorio.Next(minimo, maximo + 1)));
                 }
 
                 alimentos.Add(new Alimento
@@ -207,11 +257,90 @@ namespace ControlViveresApp.Data
             registrador.LogInformation("Se sembraron {Cantidad} productos de inventario.", alimentos.Count);
         }
 
-        private static readonly string[] Proveedores =
+        // Cinco proveedores de ejemplo por cada área del inventario.
+        // (Área, nombre, teléfono, dirección, asesor a cargo, correo)
+        private static readonly (string Area, string Nombre, string Telefono, string Direccion, string Asesor, string Correo)[] ProveedoresDeEjemplo =
         [
-            "Distribuidora El Sol", "Agroinsumos GT", "Mercado La Terminal", "Cooperativa Rural",
-            "Almacenes La Económica", "Central de Abastos", "Distribuidora San José"
+            ("Granos", "Granos del Altiplano", "2251-4010", "3a. avenida 12-45, zona 4, Ciudad de Guatemala", "Marta Lucía Ordóñez", "ventas@granosaltiplano.example"),
+            ("Granos", "Molinos San Rafael", "2360-7782", "Km 18.5 carretera al Atlántico, Guatemala", "Julio Ernesto Barrios", "pedidos@molinossanrafael.example"),
+            ("Granos", "Distribuidora El Sol", "7761-2290", "5a. calle 8-20, zona 1, Quetzaltenango", "Karla Beatriz Monzón", "contacto@distelsol.example"),
+            ("Granos", "Cooperativa Agrícola Cuchumatán", "7764-5518", "Barrio El Calvario, Huehuetenango", "Rubén Aroldo Mérida", "cooperativa@cuchumatan.example"),
+            ("Granos", "Abarrotes La Esperanza", "2232-9047", "6a. avenida 15-30, zona 1, Ciudad de Guatemala", "Silvia Patricia Gómez", "ventas@abarroteslaesperanza.example"),
+
+            ("Lácteos", "Lácteos La Montaña", "7951-3376", "Km 210 carretera a Cobán, Alta Verapaz", "Carlos Humberto Choc", "ventas@lacteoslamontana.example"),
+            ("Lácteos", "Productos Lácteos Santa Elena", "2440-1865", "Calzada Roosevelt 24-18, zona 11, Ciudad de Guatemala", "Ana Gabriela Fuentes", "pedidos@santaelena.example"),
+            ("Lácteos", "Cooperativa Ganadera del Norte", "7942-6603", "Avenida Central 4-12, Salamá, Baja Verapaz", "Oswaldo René Tzoc", "ganaderos@delnorte.example"),
+            ("Lácteos", "Distribuidora Fresca Leche", "2331-7704", "12 calle 5-60, zona 3, Mixco", "Brenda Mishell Pérez", "contacto@frescaleche.example"),
+            ("Lácteos", "Quesos y Cremas Atitlán", "7762-0941", "Calle del Lago 2-15, Sololá", "Domingo Tuy", "quesos@atitlan.example"),
+
+            ("Enlatados", "Enlatados Pacífico", "7880-2217", "Km 92 carretera a Escuintla, Escuintla", "Héctor Manuel Villatoro", "ventas@enlatadospacifico.example"),
+            ("Enlatados", "Importadora Marina GT", "2288-3450", "Boulevard Liberación 8-30, zona 9, Ciudad de Guatemala", "Lucrecia Andrea Solís", "importaciones@marinagt.example"),
+            ("Enlatados", "Conservas Don Chepe", "2471-6029", "7a. avenida 3-44, zona 6, Ciudad de Guatemala", "José Alfredo Cifuentes", "donchepe@conservas.example"),
+            ("Enlatados", "Alimentos Selectos", "2366-5801", "Diagonal 6, 10-65, zona 10, Ciudad de Guatemala", "Paola Fernanda Rivera", "ventas@alimentosselectos.example"),
+            ("Enlatados", "Central de Enlatados Zona 4", "2334-9916", "4a. avenida 9-12, zona 4, Ciudad de Guatemala", "Edwin Estuardo López", "central@enlatadoszona4.example"),
+
+            ("Frutas y Verduras", "Agroinsumos GT", "7839-4472", "Aldea San Jerónimo, Tecpán Guatemala, Chimaltenango", "Verónica Isabel Cux", "agro@insumosgt.example"),
+            ("Frutas y Verduras", "Hortalizas Tecpán", "7840-1188", "Km 87 carretera Interamericana, Tecpán, Chimaltenango", "Mauricio Sacbajá", "ventas@hortalizastecpan.example"),
+            ("Frutas y Verduras", "Frutas del Valle", "5512-3390", "Mercado Central, local 14, Antigua Guatemala", "Rosa Elena Batz", "frutas@delvalle.example"),
+            ("Frutas y Verduras", "Mercado La Terminal Mayorista", "2253-8845", "Zona 4, Terminal de Buses, Ciudad de Guatemala", "Gerson Alexander Pop", "mayorista@laterminal.example"),
+            ("Frutas y Verduras", "Cooperativa Rural Sacatepéquez", "7832-5567", "Calle Real 6-02, San Lucas Sacatepéquez", "Dina Marisol Ajú", "rural@cooperativasac.example"),
+
+            ("Carnes", "Carnes Premium Escuintla", "7888-6134", "Boulevard Los Próceres 3-50, Escuintla", "Ramiro Antonio Esquivel", "ventas@carnespremium.example"),
+            ("Carnes", "Avícola San José", "6637-2209", "Km 44 carretera a Santa Rosa, Cuilapa", "Wendy Carolina Orellana", "pedidos@avicolasanjose.example"),
+            ("Carnes", "Embutidos La Selecta", "2476-3318", "20 calle 12-40, zona 12, Ciudad de Guatemala", "Fredy Leonel Castañeda", "contacto@embutidosselecta.example"),
+            ("Carnes", "Pescados y Mariscos del Pacífico", "7885-9702", "Muelle Pesquero, Puerto San José, Escuintla", "Ingrid Johanna Santos", "mariscos@delpacifico.example"),
+            ("Carnes", "Rastro Municipal Distribución", "7761-8830", "Final 4a. avenida, zona 3, Quetzaltenango", "Byron Obdulio Tahay", "rastro@distribucion.example"),
+
+            ("Otros", "Almacenes La Económica", "2253-4471", "9a. calle 6-18, zona 1, Ciudad de Guatemala", "Claudia Marisol Aguilar", "ventas@laeconomica.example"),
+            ("Otros", "Higiene y Hogar GT", "2368-0925", "Avenida Petapa 40-12, zona 12, Ciudad de Guatemala", "Pablo Estuardo Girón", "pedidos@higienehogar.example"),
+            ("Otros", "Central de Abastos", "2219-7743", "Calzada Aguilar Batres 33-05, zona 11, Ciudad de Guatemala", "Nancy Yesenia Morales", "central@abastos.example"),
+            ("Otros", "Distribuidora San José", "7766-1058", "Calle Rodolfo Robles 10-22, Quetzaltenango", "Otto René Sandoval", "ventas@distsanjose.example"),
+            ("Otros", "Papelera Centroamericana", "2325-6694", "Km 15.5 carretera a El Salvador, Santa Catarina Pinula", "Mónica Alejandra Reyes", "papelera@centroamericana.example")
         ];
+
+        private static async Task SembrarProveedoresAsync(ContextoViveres contexto, ILogger registrador)
+        {
+            // Se completa cada área por separado, así lo que ya exista no se duplica.
+            var existentes = (await contexto.Proveedores.Select(p => new { p.Categoria, p.Nombre }).ToListAsync())
+                .Select(p => (p.Categoria, p.Nombre.ToLower()))
+                .ToHashSet();
+
+            var nuevos = new List<Proveedor>();
+
+            foreach (var ejemplo in ProveedoresDeEjemplo)
+            {
+                if (existentes.Contains((ejemplo.Area, ejemplo.Nombre.ToLower())))
+                {
+                    continue;
+                }
+
+                nuevos.Add(new Proveedor
+                {
+                    Nombre = ejemplo.Nombre,
+                    Categoria = ejemplo.Area,
+                    Telefono = ejemplo.Telefono,
+                    Direccion = ejemplo.Direccion,
+                    AsesorEncargado = ejemplo.Asesor,
+                    Correo = ejemplo.Correo,
+                    Alta = new NuevoProveedor
+                    {
+                        RegistradoPor = "admin",
+                        FechaRegistro = DateTime.UtcNow,
+                        Origen = "Datos de demostración"
+                    }
+                });
+            }
+
+            if (nuevos.Count == 0)
+            {
+                return;
+            }
+
+            contexto.Proveedores.AddRange(nuevos);
+            await contexto.SaveChangesAsync();
+
+            registrador.LogInformation("Se sembraron {Cantidad} proveedores.", nuevos.Count);
+        }
 
         private const int MetaPedidosSembrados = 40;
 
@@ -225,6 +354,10 @@ namespace ControlViveresApp.Data
                 return;
             }
 
+            var proveedoresPorArea = (await contexto.Proveedores.AsNoTracking().ToListAsync())
+                .GroupBy(p => p.Categoria)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
             var prioridades = new[] { PrioridadPedido.Baja, PrioridadPedido.Normal, PrioridadPedido.Alta };
             var estados = new[] { EstadoPedido.Pendiente, EstadoPedido.Solicitado };
             var pedidos = new List<Pedido>();
@@ -233,13 +366,18 @@ namespace ControlViveresApp.Data
             {
                 var producto = Productos[i % Productos.Length];
 
+                Proveedor? proveedor = proveedoresPorArea.TryGetValue(producto.Categoria, out var delArea)
+                    ? delArea[Aleatorio.Next(delArea.Count)]
+                    : null;
+
                 pedidos.Add(new Pedido
                 {
                     Articulo = producto.Nombre,
                     Categoria = producto.Categoria,
                     Cantidad = Aleatorio.Next(50, 500),
                     UnidadMedida = producto.Unidad,
-                    Proveedor = Proveedores[Aleatorio.Next(Proveedores.Length)],
+                    ProveedorId = proveedor?.Id,
+                    Proveedor = proveedor?.Nombre,
                     FechaNecesaria = DateOnly.FromDateTime(DateTime.Now.AddDays(Aleatorio.Next(3, 45))),
                     // Casi todos los pedidos por realizar no tienen aún un lote definido;
                     // solo se define la fecha de vencimiento hasta que el lote llega a bodega.

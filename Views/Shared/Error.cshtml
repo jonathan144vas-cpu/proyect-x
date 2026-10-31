@@ -6,14 +6,14 @@
 
 <div class="container-fluid">
     <div class="form-card" style="max-width: 620px; margin: 3rem auto;">
-        <h1 style="color: #f87171; font-size: 1.5rem; font-weight: 700;">Ocurrió un error</h1>
-        <p style="color: #94a3b8; margin-top: 0.75rem;">
+        <h1 style="color: var(--c-rojo); font-size: 1.5rem; font-weight: 700;">Ocurrió un error</h1>
+        <p style="color: var(--text-muted); margin-top: 0.75rem;">
             No se pudo procesar tu solicitud. Vuelve a intentarlo en unos momentos.
         </p>
 
         @if (Model.MostrarIdSolicitud)
         {
-            <p style="color: #94a3b8; margin-top: 0.75rem;">
+            <p style="color: var(--text-muted); margin-top: 0.75rem;">
                 <strong>Id de la solicitud:</strong> <code>@Model.IdSolicitud</code>
             </p>
         }
@@ -22,7 +22,7 @@
             <a asp-controller="Alimentos" asp-action="Index" class="btn-guardar">Volver al inventario</a>
         </div>
 
-        <p style="color: #64748b; font-size: 0.8rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #334155;">
+        <p style="color: var(--text-subtle); font-size: 0.8rem; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border);">
             Para ver el detalle técnico del error mientras desarrollas, ejecuta la aplicación con la
             variable de entorno <strong>ASPNETCORE_ENVIRONMENT</strong> en <strong>Development</strong>.
             No actives el modo Development en un servidor publicado: mostraría información sensible.

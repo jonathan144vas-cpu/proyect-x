@@ -1,41 +1,49 @@
 @model VisualizacionViewModel
 
+@using System.Globalization
+
 @{
     ViewData["Title"] = "Visualización";
+    var gt = new CultureInfo("es-GT");
 }
 
-<div class="container-fluid">
+<div class="container-fluid" id="panelVisualizacion" data-url="@Url.Action("Datos")">
     <div class="header-panel">
         <div>
             <h2><i class="bi bi-bar-chart-line-fill"></i> Visualización</h2>
             <p class="subtitulo-pagina">Lo que tenemos en bodega y los envíos que hay que hacer, en gráficas.</p>
         </div>
+
+        <p class="estado-actualizacion" role="status">
+            <span class="estado-punto" id="puntoActualizacion"></span>
+            Se actualiza sola · última vez: <strong id="ultimaActualizacion">@Model.ActualizadoEn</strong>
+        </p>
     </div>
 
     <div class="tarjetas-resumen tarjetas-seis">
         <div class="tarjeta">
             <div class="tarjeta-etiqueta">Unidades en bodega</div>
-            <div class="tarjeta-valor">@Model.UnidadesEnBodega.ToString("N0")</div>
+            <div class="tarjeta-valor" data-kpi="unidadesEnBodega">@Model.UnidadesEnBodega.ToString("N0", gt)</div>
         </div>
         <div class="tarjeta">
             <div class="tarjeta-etiqueta">Productos distintos</div>
-            <div class="tarjeta-valor">@Model.ProductosDistintos</div>
+            <div class="tarjeta-valor" data-kpi="productosDistintos">@Model.ProductosDistintos</div>
         </div>
         <div class="tarjeta">
             <div class="tarjeta-etiqueta">Unidades por vencer (7 días)</div>
-            <div class="tarjeta-valor">@Model.UnidadesPorVencer.ToString("N0")</div>
+            <div class="tarjeta-valor" data-kpi="unidadesPorVencer">@Model.UnidadesPorVencer.ToString("N0", gt)</div>
         </div>
         <div class="tarjeta">
             <div class="tarjeta-etiqueta">Envíos por hacer</div>
-            <div class="tarjeta-valor">@Model.EnviosPorHacer</div>
+            <div class="tarjeta-valor" data-kpi="enviosPorHacer">@Model.EnviosPorHacer</div>
         </div>
         <div class="tarjeta">
             <div class="tarjeta-etiqueta">Familias por atender</div>
-            <div class="tarjeta-valor">@Model.FamiliasPorAtender.ToString("N0")</div>
+            <div class="tarjeta-valor" data-kpi="familiasPorAtender">@Model.FamiliasPorAtender.ToString("N0", gt)</div>
         </div>
         <div class="tarjeta">
             <div class="tarjeta-etiqueta">Pedidos activos</div>
-            <div class="tarjeta-valor">@Model.PedidosActivos</div>
+            <div class="tarjeta-valor" data-kpi="pedidosActivos">@Model.PedidosActivos</div>
         </div>
     </div>
 
@@ -60,9 +68,9 @@
         </section>
 
         <section class="grafica-card grafica-ancha">
-            <h4>Ingreso de víveres por mes</h4>
-            <p class="grafica-nota">Unidades que entraron a la bodega en los últimos meses.</p>
-            <div class="grafica-linea"><canvas id="graficaIngresoMes"></canvas></div>
+            <h4>Entradas y salidas de víveres por mes</h4>
+            <p class="grafica-nota">Unidades que entraron a la bodega (altas y pedidos recibidos) frente a las que salieron en entregas.</p>
+            <div class="grafica-linea"><canvas id="graficaMovimientoMes"></canvas></div>
         </section>
     </div>
 

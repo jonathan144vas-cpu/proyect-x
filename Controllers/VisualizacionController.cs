@@ -9,6 +9,7 @@ namespace ControlViveresApp.Controllers
     /// <summary>
     /// Estadísticas y gráficas de lo que hay en bodega y de los envíos por hacer.
     /// Es de solo lectura: junta datos de varias tablas y los entrega ya agrupados.
+    /// La pantalla se actualiza sola pidiendo los mismos datos a <see cref="Datos"/>.
     /// </summary>
     [Authorize]
     public class VisualizacionController : Controller
@@ -27,7 +28,21 @@ namespace ControlViveresApp.Controllers
 
         public async Task<IActionResult> Index()
         {
+            return View(await ConstruirModeloAsync());
+        }
+
+        // Datos en JSON para que la pantalla se refresque sin recargarse.
+        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        public async Task<IActionResult> Datos()
+        {
+            return Json(await ConstruirModeloAsync());
+        }
+
+        private async Task<VisualizacionViewModel> ConstruirModeloAsync()
+        {
             var hoy = DateOnly.FromDateTime(DateTime.Now);
+            var meses = UltimosMeses(hoy);
+            var mesesPasados = meses.Take(MesesAtras + 1).ToList();
 
             var alimentos = await _contexto.Alimentos.AsNoTracking().ToListAsync();
             var programadas = await _contexto.EntregasProgramadas.AsNoTracking()
@@ -44,6 +59,14 @@ namespace ControlViveresApp.Controllers
                 .Select(g => new { Estado = g.Key, Total = g.Count() })
                 .ToListAsync();
 
+            var desde = DateTime.UtcNow.AddMonths(-(MesesAtras + 1));
+            var movimientos = (await _contexto.MovimientosInventario.AsNoTracking()
+                    .Where(m => m.Fecha >= desde)
+                    .Select(m => new { m.Fecha, m.Tipo, m.Cantidad })
+                    .ToListAsync())
+                .Select(m => new { Mes = ClaveMes(DateOnly.FromDateTime(m.Fecha.ToLocalTime())), m.Tipo, m.Cantidad })
+                .ToList();
+
             var modelo = new VisualizacionViewModel
             {
                 UnidadesEnBodega = alimentos.Sum(a => a.Cantidad),
@@ -51,7 +74,8 @@ namespace ControlViveresApp.Controllers
                 UnidadesPorVencer = alimentos.Where(a => EstadoDeVencimiento(a, hoy) == "Por vencer").Sum(a => a.Cantidad),
                 EnviosPorHacer = programadas.Count,
                 FamiliasPorAtender = programadas.Sum(e => e.FamiliasBeneficiadas),
-                PedidosActivos = pedidos.Count(p => EsActivo(p.Estado))
+                PedidosActivos = pedidos.Count(p => EsActivo(p.Estado)),
+                ActualizadoEn = DateTime.Now.ToString("HH:mm:ss")
             };
 
             modelo.InventarioPorCategoria = alimentos
@@ -90,8 +114,6 @@ namespace ControlViveresApp.Controllers
                 .Select(g => new Punto($"Prioridad {g.Key.ToString().ToLower()}", g.Count()))
                 .ToList();
 
-            var meses = UltimosMeses(hoy);
-
             modelo.EntregasRealizadasPorMes = meses
                 .Select(mes => new Punto(mes, realizadas.Count(f => ClaveMes(f) == mes)))
                 .ToList();
@@ -100,13 +122,19 @@ namespace ControlViveresApp.Controllers
                 .Select(mes => new Punto(mes, programadas.Count(e => ClaveMes(e.FechaProgramada) == mes)))
                 .ToList();
 
-            modelo.IngresoInventarioPorMes = meses
-                .Select(mes => new Punto(mes, alimentos
-                    .Where(a => ClaveMes(DateOnly.FromDateTime(a.FechaRegistro)) == mes)
-                    .Sum(a => a.Cantidad)))
+            modelo.EntradasPorMes = mesesPasados
+                .Select(mes => new Punto(mes, movimientos
+                    .Where(m => m.Mes == mes && m.Tipo == TipoMovimiento.Entrada)
+                    .Sum(m => m.Cantidad)))
                 .ToList();
 
-            return View(modelo);
+            modelo.SalidasPorMes = mesesPasados
+                .Select(mes => new Punto(mes, movimientos
+                    .Where(m => m.Mes == mes && m.Tipo == TipoMovimiento.Salida)
+                    .Sum(m => m.Cantidad)))
+                .ToList();
+
+            return modelo;
         }
 
         private static readonly List<string> OrdenVencimiento = ["Vigente", "Por vencer", "Vencido", "Sin vencimiento"];

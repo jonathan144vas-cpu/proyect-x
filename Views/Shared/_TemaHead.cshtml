@@ -1,0 +1,13 @@
+@* Declara que la página soporta modo claro y oscuro (evita que el navegador lo oscurezca por su cuenta)
+   y aplica el tema guardado antes de pintar, para que no parpadee. *@
+<meta name="color-scheme" id="metaColorScheme" content="dark light" />
+<meta name="darkreader-lock" />
+<script>
+    (function () {
+        var tema = 'oscuro';
+        try { tema = localStorage.getItem('tema') || 'oscuro'; } catch (e) { }
+        document.documentElement.setAttribute('data-tema', tema === 'claro' ? 'claro' : 'oscuro');
+        // "only light" impide que el navegador oscurezca por su cuenta una página que ya es clara.
+        document.getElementById('metaColorScheme').setAttribute('content', tema === 'claro' ? 'only light' : 'dark');
+    })();
+</script>

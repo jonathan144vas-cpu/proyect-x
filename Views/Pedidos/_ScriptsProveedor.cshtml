@@ -1,0 +1,5 @@
+@* Datos y script de la lista de proveedores del formulario de pedidos. *@
+<script>
+    window.proveedoresDisponibles = @Json.Serialize(ViewBag.Proveedores ?? Array.Empty<ProveedorOpcion>());
+</script>
+<script src="~/js/proveedores-pedido.js" asp-append-version="true"></script>

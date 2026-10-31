@@ -132,6 +132,9 @@ namespace ControlViveresApp.Controllers
             alimento.FechaRegistro = DateTime.UtcNow;
 
             _contexto.Alimentos.Add(alimento);
+            _contexto.MovimientosInventario.Add(MovimientoInventario.Nuevo(
+                TipoMovimiento.Entrada, alimento.Nombre, alimento.Categoria, alimento.Cantidad,
+                alimento.UnidadMedida, "Alta en el inventario", User.Identity?.Name));
             await _contexto.SaveChangesAsync();
 
             TempData["Mensaje"] = "Alimento agregado correctamente";

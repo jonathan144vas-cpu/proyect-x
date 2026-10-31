@@ -1,3 +1,36 @@
+// Modo claro / oscuro: se guarda la elección y se avisa a las gráficas y al mapa.
+(function () {
+    var raiz = document.documentElement;
+    var boton = document.getElementById('botonTema');
+    var texto = document.getElementById('textoTema');
+
+    function actual() {
+        return raiz.getAttribute('data-tema') === 'claro' ? 'claro' : 'oscuro';
+    }
+
+    function etiquetar() {
+        var claro = actual() === 'claro';
+        if (texto) texto.textContent = claro ? 'Modo claro' : 'Modo oscuro';
+        if (boton) boton.setAttribute('aria-pressed', claro ? 'true' : 'false');
+    }
+
+    window.temaActual = actual;
+    etiquetar();
+
+    if (!boton) return;
+
+    boton.addEventListener('click', function () {
+        var nuevo = actual() === 'claro' ? 'oscuro' : 'claro';
+        raiz.classList.add('tema-animado');
+        raiz.setAttribute('data-tema', nuevo);
+        try { localStorage.setItem('tema', nuevo); } catch (e) { }
+        var meta = document.getElementById('metaColorScheme');
+        if (meta) meta.setAttribute('content', nuevo === 'claro' ? 'only light' : 'dark');
+        etiquetar();
+        document.dispatchEvent(new CustomEvent('tema-cambiado', { detail: nuevo }));
+    });
+})();
+
 // Abrir y cerrar el menú lateral en pantallas de teléfono.
 (function () {
     var boton = document.getElementById('botonMenu');
